@@ -21,7 +21,7 @@ public:
     int numNeurons{};
     std::vector<Neuron> neurons;
     std::vector<Connection> connections;
-
+    std::string toString();
 };
 
 

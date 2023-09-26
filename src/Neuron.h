@@ -4,7 +4,7 @@
 
 #ifndef DIGITOR_NEURON_H
 #define DIGITOR_NEURON_H
-
+#include "string"
 
 class Neuron {
 public:
@@ -17,7 +17,7 @@ public:
     [[nodiscard]] double getBias() const;
 
     void setBias(double bias);
-
+    std::string toString() const;
 private:
     double value;
     double bias;

@@ -21,5 +21,9 @@ double Neuron::getOutput() const {
 
 void Neuron::addValue(double value) {
     this->value += value;
+}
+
+std::string Neuron::toString() const {
+    return "Neuron : bias " + std::to_string(bias) + std::to_string(getOutput());
 };
 
