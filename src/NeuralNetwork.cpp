@@ -21,3 +21,9 @@ std::string NeuralNetwork::toString() {
     }
     return result;
 }
+
+void NeuralNetwork::forwardProp() {
+    for (int i = 0; i < layers.size() - 1; i++) {
+        layers[i].feedForward(i == 0);
+    }
+}

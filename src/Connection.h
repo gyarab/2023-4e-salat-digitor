@@ -9,18 +9,22 @@
 
 class Connection {
 public:
-    Connection(Neuron &fromNeuron, Neuron &toNeuron);
+    Connection(Neuron *fromNeuron, Neuron *toNeuron);
+
+    Connection &operator=(const Connection &) {
+        return *this;
+    }
 
     void setWeight(double weight);
 
-    double getWeight();
+    double getWeight() const;
 
-    double getInput();
+    double getInput() const;
 
-    double getOutput();
+    double getOutput() const;
 
-    Neuron fromNeuron;
-    Neuron toNeuron;
+    Neuron *fromNeuron;
+    Neuron *toNeuron;
     double weight{};
 };
 

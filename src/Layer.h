@@ -12,16 +12,20 @@
 
 class Layer {
 public:
-    Layer(int numNeurons);
+    explicit Layer(int numNeurons);
 
     void connectLayer(Layer &nextLayer);
 
-    void feedForward();
+    void feedForward(bool input);
 
     int numNeurons{};
-    std::vector<Neuron> neurons;
+
+    std::vector<Neuron *> neurons;
     std::vector<Connection> connections;
+
     std::string toString();
+
+
 };
 
 

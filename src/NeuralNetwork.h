@@ -11,7 +11,9 @@
 
 class NeuralNetwork {
 public:
-    NeuralNetwork(std::vector<Layer> layers);
+    explicit NeuralNetwork(std::vector<Layer> layers);
+
+    void forwardProp();
 
     std::string toString();
 

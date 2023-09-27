@@ -9,8 +9,9 @@
 
 Layer::Layer(int numNeurons) {
     for (int i = 0; i < numNeurons; i++) {
-        neurons.push_back(Neuron());
-        neurons[i].setBias(i);
+        Neuron *n = new Neuron();
+        this->neurons.push_back(n);
+        neurons[i]->setBias(i);
     }
     this->numNeurons = numNeurons;
 }
@@ -23,18 +24,24 @@ void Layer::connectLayer(Layer &nextLayer) {
     }
 }
 
-void Layer::feedForward() {
-
+void Layer::feedForward(bool input) {
+    if (input) {
+        for (auto &connection: connections) {
+            connection.toNeuron->value += (connection.getWeight() * connection.fromNeuron->value);
+        }
+    } else {
+        for (auto &connection: connections) {
+            connection.toNeuron->value += (connection.getWeight() * connection.fromNeuron->value);
+        }
+    }
 }
 
 std::string Layer::toString() {
     std::string result;
     for (int i = 0; i < connections.size(); i++) {
-        int *ptr1 = reinterpret_cast<int *>(&connections[i].fromNeuron);
-        int *ptr2 = reinterpret_cast<int *>(&connections[i].toNeuron);
         result +=
-                "\tConnection: " + std::to_string(i) + " neuron " + std::to_string(connections[i].fromNeuron.getBias())
-                + " -> " + std::to_string(connections[i].toNeuron.getBias()) + "\n";
+                "\tConnection: " + std::to_string(i) + " neuron " + std::to_string(connections[i].fromNeuron->getBias())
+                + " -> " + std::to_string(connections[i].toNeuron->getBias()) + "\n";
     }
     return result;
 }

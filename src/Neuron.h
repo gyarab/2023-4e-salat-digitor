@@ -4,23 +4,33 @@
 
 #ifndef DIGITOR_NEURON_H
 #define DIGITOR_NEURON_H
+
 #include "string"
 
 class Neuron {
 public:
     Neuron();
 
-    void addValue(double value);
+    void addValue(double v);
+
+    void setBias(double b);
+
+    void setValue(double v);
 
     [[nodiscard]] double getOutput() const;
 
+    [[nodiscard]] double getValue() const;
+
+    [[nodiscard]] static double sigmoid(double d);
+
     [[nodiscard]] double getBias() const;
 
-    void setBias(double bias);
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
+
+    double value{};
+    double bias{};
 private:
-    double value;
-    double bias;
+
 
 };
 
