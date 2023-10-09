@@ -1,24 +1,30 @@
-//
-// Created by ondrej on 26/09/23.
-//
-
 #ifndef DIGITOR_NEURALNETWORK_H
 #define DIGITOR_NEURALNETWORK_H
 
 #include "vector"
 #include "string"
-#include "Layer.h"
 
 class NeuralNetwork {
 public:
-    explicit NeuralNetwork(std::vector<Layer> layers);
+    explicit NeuralNetwork(const std::vector<int> &neuronsPerLayer);
 
-    void forwardProp();
+    explicit NeuralNetwork(const std::string &filename);
 
     std::string toString();
 
-    std::vector<Layer> layers;
+    void feed(const std::vector<double> &input);
 
+
+private:
+    void feedForward();
+
+    void initRandom();
+
+    static double ReLU(double v);
+
+    std::vector<std::vector<double>> neuron;
+    std::vector<std::vector<double>> bias;
+    std::vector<std::vector<std::vector<double>>> weight;
 };
 
 
