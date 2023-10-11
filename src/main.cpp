@@ -5,10 +5,12 @@ using namespace std;
 
 
 int main() {
-    vector<int> layers = {20, 5, 5, 9};
+    vector<int> layers = {5, 2, 2, 4};
     NeuralNetwork digitor = NeuralNetwork(layers);
-    vector<double> input = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    vector<double> input = {1, 2, 3, 4, 5};
     digitor.feed(input);
+    NeuralNetwork d = NeuralNetwork("NeuralNetwork.json");
+    d.feed(input);
     return 0;
 }
 

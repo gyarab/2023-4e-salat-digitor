@@ -22,9 +22,14 @@ private:
 
     static double ReLU(double v);
 
+    static double sigmoid(double v);
+
+    static double activationFn(double v);
+
     std::vector<std::vector<double>> neuron;
     std::vector<std::vector<double>> bias;
     std::vector<std::vector<std::vector<double>>> weight;
+
 };
 
 

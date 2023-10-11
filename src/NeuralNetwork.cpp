@@ -1,14 +1,18 @@
 #include <random>
+#include <utility>
 #include "NeuralNetwork.h"
 #include "string"
+#include "fstream"
 #include "iostream"
+#include "nlohmann/json.hpp"
 
+using json = nlohmann::json;
 
 NeuralNetwork::NeuralNetwork(const std::vector<int> &neuronsPerLayer) {
     neuron.resize(neuronsPerLayer.size());
     weight.resize(neuronsPerLayer.size() - 1);
     bias.resize(neuronsPerLayer.size());
-    for (int i = 0; i < neuronsPerLayer.size(); i++) {
+    for (int i = 0; i < neuronsPerLayer.size(); ++i) {
         neuron[i].resize(neuronsPerLayer[i]);
         bias[i].resize(neuronsPerLayer[i]);
     }
@@ -22,6 +26,40 @@ NeuralNetwork::NeuralNetwork(const std::vector<int> &neuronsPerLayer) {
 }
 
 NeuralNetwork::NeuralNetwork(const std::string &filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open the JSON file." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    std::string jsonString((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+    json data = json::parse(jsonString);
+    int numNeurons = data["layer"].size();
+    neuron.resize(numNeurons);
+    weight.resize(numNeurons - 1);
+    bias.resize(numNeurons);
+    for (int i = 0; i < numNeurons; ++i) {
+        neuron[i].resize(data["layer"][i]);
+        bias[i].resize(data["layer"][i]);
+    }
+    for (int i = 0; i < weight.size(); ++i) {
+        weight[i].resize(neuron[i + 1].size());
+        for (int j = 0; j < weight[i].size(); ++j) {
+            weight[i][j].resize(neuron[i].size());
+        }
+    }
+    for (int i = 0; i < weight.size(); ++i) {
+        for (int j = 0; j < weight[i].size(); ++j) {
+            for (int k = 0; k < weight[i][j].size(); ++k) {
+                weight[i][j][k] = data["weights"][i][j][k];
+            }
+        }
+    }
+    for (int i = 0; i < bias.size(); ++i) {
+        for (int j = 0; j < bias[i].size(); ++j) {
+            bias[i][j] = data["biases"][i][j];
+        }
+    }
 
 }
 
@@ -42,13 +80,21 @@ void NeuralNetwork::feedForward() {
             for (int k = 0; k < neuron[i - 1].size(); ++k) {
                 neuron[i][j] += weight[i - 1][j][k] * neuron[i - 1][k];
             }
-            if (i != neuron.size() - 1) neuron[i][j] = ReLU(neuron[i][j] + bias[i][j]);
+            if (i != neuron.size() - 1) neuron[i][j] = activationFn(neuron[i][j] + bias[i][j]);
         }
     }
 }
 
 double NeuralNetwork::ReLU(double v) {
     return v > 0 ? v : 0;
+}
+
+double NeuralNetwork::sigmoid(double v) {
+    return 1.0 / (1.0 + exp(-v));
+}
+
+double NeuralNetwork::activationFn(double v) {
+    return sigmoid(v);
 }
 
 void NeuralNetwork::initRandom() {
@@ -95,6 +141,3 @@ std::string NeuralNetwork::toString() {
     }
     return result;
 }
-
-
-
