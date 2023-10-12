@@ -3,10 +3,11 @@
 
 #include "vector"
 #include "string"
+#include "nlohmann/json.hpp"
 
 class NeuralNetwork {
 public:
-    explicit NeuralNetwork(const std::vector<int> &neuronsPerLayer);
+    explicit NeuralNetwork(const std::vector<int> &layers);
 
     explicit NeuralNetwork(const std::string &filename);
 
@@ -18,7 +19,13 @@ public:
 private:
     void feedForward();
 
+    void initJsonFile();
+
     void initRandom();
+
+    void updateJsonFile();
+
+    nlohmann::json readJsonFile();
 
     static double ReLU(double v);
 
@@ -26,10 +33,13 @@ private:
 
     static double activationFn(double v);
 
+    std::string filename;
+    std::vector<int> layers;
     std::vector<std::vector<double>> neuron;
     std::vector<std::vector<double>> bias;
     std::vector<std::vector<std::vector<double>>> weight;
 
+    void writeJsonFile();
 };
 
 

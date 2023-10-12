@@ -1,5 +1,4 @@
 #include <random>
-#include <utility>
 #include "NeuralNetwork.h"
 #include "string"
 #include "fstream"
@@ -9,12 +8,13 @@
 using json = nlohmann::json;
 
 NeuralNetwork::NeuralNetwork(const std::vector<int> &neuronsPerLayer) {
-    neuron.resize(neuronsPerLayer.size());
-    weight.resize(neuronsPerLayer.size() - 1);
-    bias.resize(neuronsPerLayer.size());
-    for (int i = 0; i < neuronsPerLayer.size(); ++i) {
-        neuron[i].resize(neuronsPerLayer[i]);
-        bias[i].resize(neuronsPerLayer[i]);
+    layers = neuronsPerLayer;
+    neuron.resize(layers.size());
+    weight.resize(layers.size() - 1);
+    bias.resize(layers.size());
+    for (int i = 0; i < layers.size(); ++i) {
+        neuron[i].resize(layers[i]);
+        bias[i].resize(layers[i]);
     }
     for (int i = 0; i < weight.size(); ++i) {
         weight[i].resize(neuron[i + 1].size());
@@ -23,18 +23,17 @@ NeuralNetwork::NeuralNetwork(const std::vector<int> &neuronsPerLayer) {
         }
     }
     initRandom();
+    initJsonFile();
 }
 
-NeuralNetwork::NeuralNetwork(const std::string &filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open the JSON file." << std::endl;
-        exit(EXIT_FAILURE);
+NeuralNetwork::NeuralNetwork(const std::string &file) {
+    this->filename = file;
+    json data = readJsonFile();
+    auto jLayers = data["layer"];
+    auto numNeurons = jLayers.size();
+    for (const auto &nLayer: jLayers) {
+        layers.push_back(nLayer);
     }
-    std::string jsonString((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    file.close();
-    json data = json::parse(jsonString);
-    int numNeurons = data["layer"].size();
     neuron.resize(numNeurons);
     weight.resize(numNeurons - 1);
     bias.resize(numNeurons);
@@ -60,11 +59,13 @@ NeuralNetwork::NeuralNetwork(const std::string &filename) {
             bias[i][j] = data["biases"][i][j];
         }
     }
-
 }
 
 void NeuralNetwork::feed(const std::vector<double> &input) {
-    if (input.size() != neuron[0].size()) exit(EXIT_FAILURE);
+    if (input.size() != neuron[0].size()) {
+        std::cerr << "Wrong input format" << std::endl;
+        exit(EXIT_FAILURE);
+    }
     for (int i = 0; i < input.size(); ++i) {
         neuron[0][i] = input[i];
     }
@@ -140,4 +141,49 @@ std::string NeuralNetwork::toString() {
         result += "\n\n";
     }
     return result;
+}
+
+void NeuralNetwork::initJsonFile() {
+    std::string file;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0, 1.0);
+    file +=
+            "neuralNetwork(layers=" + std::to_string(neuron.size()) + ", id=" +
+            std::to_string((int) round(dis(gen) * 10000)) +
+            ").json";
+    std::ofstream output_file(file);
+    filename = file;
+    writeJsonFile();
+}
+
+void NeuralNetwork::updateJsonFile() {
+    writeJsonFile();
+}
+
+void NeuralNetwork::writeJsonFile() {
+    std::ofstream output_file(filename);
+    if (output_file.is_open()) {
+        json data;
+        data["layer"] = layers;
+        data["weights"] = weight;
+        data["biases"] = bias;
+        std::string stringData = data.dump(4);
+        output_file << data.dump(4);
+        output_file.close();
+        std::cout << "JSON data saved to '" << filename << "'" << std::endl;
+    } else {
+        std::cerr << "Failed to open the output file." << std::endl;
+    }
+}
+
+nlohmann::json NeuralNetwork::readJsonFile() {
+    std::ifstream jFile(filename);
+    if (!jFile.is_open()) {
+        std::cerr << "Failed to open the JSON file." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    std::string jsonString((std::istreambuf_iterator<char>(jFile)), std::istreambuf_iterator<char>());
+    jFile.close();
+    return json::parse(jsonString);
 }
