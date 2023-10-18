@@ -3,11 +3,15 @@
 #include "string"
 #include "fstream"
 #include "iostream"
+#include "TrainData.h"
 #include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
 
-NeuralNetwork::NeuralNetwork(const std::vector<int> &neuronsPerLayer) {
+NeuralNetwork::NeuralNetwork(const std::vector<unsigned int> &neuronsPerLayer, const char *activationFn = "sigmoid") {
+    if (strcmp(activationFn, "sigmoid") == 0) setActivationType(0);
+    else if (strcmp(activationFn, "ReLU") == 0) setActivationType(1);
+    else setActivationType(-1);
     layers = neuronsPerLayer;
     neuron.resize(layers.size());
     weight.resize(layers.size() - 1);
@@ -29,6 +33,7 @@ NeuralNetwork::NeuralNetwork(const std::vector<int> &neuronsPerLayer) {
 NeuralNetwork::NeuralNetwork(const std::string &file) {
     this->filename = file;
     json data = readJsonFile();
+    setActivationType(data["activation"]);
     auto jLayers = data["layer"];
     auto numNeurons = jLayers.size();
     for (const auto &nLayer: jLayers) {
@@ -58,10 +63,11 @@ NeuralNetwork::NeuralNetwork(const std::string &file) {
         for (int j = 0; j < bias[i].size(); ++j) {
             bias[i][j] = data["biases"][i][j];
         }
+
     }
 }
 
-void NeuralNetwork::feed(const std::vector<double> &input) {
+std::vector<double> NeuralNetwork::feed(const std::vector<double> &input) {
     if (input.size() != neuron[0].size()) {
         std::cerr << "Wrong input format" << std::endl;
         exit(EXIT_FAILURE);
@@ -70,9 +76,11 @@ void NeuralNetwork::feed(const std::vector<double> &input) {
         neuron[0][i] = input[i];
     }
     feedForward();
+    std::vector<double> result;
     for (double i: neuron[neuron.size() - 1]) {
-        std::cout << i << std::endl;
+        result.push_back(i);
     }
+    return result;
 }
 
 void NeuralNetwork::feedForward() {
@@ -81,9 +89,40 @@ void NeuralNetwork::feedForward() {
             for (int k = 0; k < neuron[i - 1].size(); ++k) {
                 neuron[i][j] += weight[i - 1][j][k] * neuron[i - 1][k];
             }
-            if (i != neuron.size() - 1) neuron[i][j] = activationFn(neuron[i][j] + bias[i][j]);
+            neuron[i][j] = activationFn(neuron[i][j] + bias[i][j]);
         }
     }
+}
+
+void NeuralNetwork::train(const std::vector<TrainData> &data) {
+    double totalCost;
+    for (const auto &d: data) {
+        if (d.image.size() != neuron[0].size()) {
+            std::cerr << "Wrong input format" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        for (int j = 0; j < d.image.size(); ++j) {
+            neuron[0][j] = d.image[j];
+        }
+        feedForward();
+        totalCost += calculateCost(d.value);
+    }
+    totalCost /= (double) data.size();
+    std::cout << totalCost << std::endl;
+}
+
+std::vector<std::vector<std::vector<double>>> NeuralNetwork::backPropagate() {
+
+    return std::vector<std::vector<std::vector<double>>>();
+}
+
+double NeuralNetwork::calculateCost(unsigned int targetValue) {
+    double cost = 0;
+    for (int i = 0; i < neuron[neuron.size() - 1].size(); ++i) {
+        if (i + 1 == targetValue) cost += pow(2, (neuron[neuron.size() - 1][i] - 1));
+        cost += pow(2, neuron[neuron.size() - 1][i] - 0);
+    }
+    return cost;
 }
 
 double NeuralNetwork::ReLU(double v) {
@@ -94,8 +133,16 @@ double NeuralNetwork::sigmoid(double v) {
     return 1.0 / (1.0 + exp(-v));
 }
 
-double NeuralNetwork::activationFn(double v) {
-    return sigmoid(v);
+double NeuralNetwork::activationFn(double v) const {
+    switch (activationType) {
+        case 0:
+            return sigmoid(v);
+        case 1:
+            return ReLU(v);
+        default:
+            std::cerr << "Invalid activation function" << std::endl;
+            exit(EXIT_FAILURE);
+    }
 }
 
 void NeuralNetwork::initRandom() {
@@ -116,6 +163,9 @@ void NeuralNetwork::initRandom() {
             std::uniform_real_distribution<> dis(-1.0, 1.0);
             j = dis(gen);
         }
+    }
+    for (double &i: bias[bias.size() - 1]) {
+        i = 0;
     }
 }
 
@@ -165,6 +215,7 @@ void NeuralNetwork::writeJsonFile() {
     std::ofstream output_file(filename);
     if (output_file.is_open()) {
         json data;
+        data["activation"] = activationType;
         data["layer"] = layers;
         data["weights"] = weight;
         data["biases"] = bias;
@@ -187,3 +238,10 @@ nlohmann::json NeuralNetwork::readJsonFile() {
     jFile.close();
     return json::parse(jsonString);
 }
+
+void NeuralNetwork::setActivationType(int v) {
+    this->activationType = v;
+}
+
+
+

@@ -16,6 +16,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 add_executable(digitor src/main.cpp
         src/NeuralNetwork.cpp
         src/NeuralNetwork.h
+        src/TrainData.h
 )
 
 target_link_libraries(digitor PRIVATE nlohmann_json)
