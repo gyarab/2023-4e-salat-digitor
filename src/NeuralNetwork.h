@@ -16,12 +16,12 @@ public:
 
     std::vector<double> feed(const std::vector<double> &input);
 
-    void train(const std::vector<TrainData> &data);
+    void train(const std::vector<TrainData> &data, unsigned int iterations);
 
 private:
     void feedForward();
 
-    std::vector<std::vector<std::vector<double>>> backPropagate();
+    void backPropagate(double cost, unsigned int target);
 
     void initJsonFile();
 
@@ -39,6 +39,8 @@ private:
 
     [[nodiscard]] double activationFn(double v) const;
 
+    [[nodiscard]] double activationFnDerivative(double v);
+
     int activationType{};
     std::string filename;
     std::vector<unsigned int> layers;
@@ -49,6 +51,10 @@ private:
     void writeJsonFile();
 
     double calculateCost(unsigned int targetValue);
+
+    double sigmoidDerivative(double v);
+
+    double ReLUDerivative(double v);
 };
 
 
