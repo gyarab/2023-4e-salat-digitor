@@ -5,7 +5,7 @@
 #include "iostream"
 
 struct TrainData {
-    std::vector<unsigned int> image;
+    std::vector<double> image;
     unsigned int value;
 };
 

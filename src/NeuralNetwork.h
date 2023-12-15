@@ -16,12 +16,12 @@ public:
 
     std::vector<double> feed(const std::vector<double> &input);
 
-    void train(const std::vector<TrainData> &data, unsigned int iterations);
+    void train(const std::vector<TrainData> &data, unsigned int iterations, double learningRate);
 
 private:
     void feedForward();
 
-    void backPropagate(double cost, unsigned int target);
+    void backPropagate(double cost, std::vector<double> target, double learningRate);
 
     void initJsonFile();
 

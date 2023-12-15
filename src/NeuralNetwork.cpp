@@ -86,6 +86,11 @@ std::vector<double> NeuralNetwork::feed(const std::vector<double> &input) {
 void NeuralNetwork::feedForward() {
     for (int i = 1; i < neuron.size(); ++i) {
         for (int j = 0; j < neuron[i].size(); ++j) {
+            neuron[i][j] = 0;
+        }
+    }
+    for (int i = 1; i < neuron.size(); ++i) {
+        for (int j = 0; j < neuron[i].size(); ++j) {
             for (int k = 0; k < neuron[i - 1].size(); ++k) {
                 neuron[i][j] += weight[i - 1][j][k] * neuron[i - 1][k];
             }
@@ -94,7 +99,7 @@ void NeuralNetwork::feedForward() {
     }
 }
 
-void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int iterations) {
+void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int iterations, double learningRate) {
     double totalCost;
     for (int i = 0; i < iterations; ++i) {
         for (const auto &d: data) {
@@ -107,12 +112,19 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
             }
             feedForward();
             totalCost = calculateCost(d.value);
-            backPropagate(totalCost, d.value);
+            std::vector<double> target;
+            target.resize(layers[layers.size() - 1]);
+            for (int j = 0; j < target.size(); ++j) {
+                if (j == d.value) target[j] = 1;
+                else target[j] = 0;
+            }
+            backPropagate(totalCost, target, learningRate);
         }
     }
+    updateJsonFile();
 }
 
-void NeuralNetwork::backPropagate(double cost, unsigned int target) {
+void NeuralNetwork::backPropagate(double cost, std::vector<double> target, double learningRate) {
     std::vector<double> errors;
     std::vector<std::vector<double>> deltas;
     errors.resize(layers.size() - 1);
@@ -122,7 +134,7 @@ void NeuralNetwork::backPropagate(double cost, unsigned int target) {
             deltas[i].resize(neuron[neuron.size() - 1].size());
             errors[i] = cost;
             for (int j = 0; j < deltas[i].size(); ++j) {
-                deltas[i][j] = errors[i] * neuron[neuron.size() - 1][j];
+                deltas[i][j] = errors[i] * target[j];
             }
         } else {
             deltas[i].resize(neuron[i + 1].size());
@@ -149,7 +161,7 @@ void NeuralNetwork::backPropagate(double cost, unsigned int target) {
         }
         for (int j = 0; j < weight[i].size(); ++j) {
             for (int k = 0; k < weight[i][j].size(); ++k) {
-                weight[i][j][k] += change[j][k];
+                weight[i][j][k] += change[j][k] * learningRate;
             }
         }
     }
@@ -157,13 +169,9 @@ void NeuralNetwork::backPropagate(double cost, unsigned int target) {
 
 double NeuralNetwork::calculateCost(unsigned int targetValue) {
     double cost = 0;
-    /*for (int i = 0; i < neuron[neuron.size() - 1].size(); ++i) {
-        if (i + 1 == targetValue) cost += pow(2, (neuron[neuron.size() - 1][i] - 1));
-        else cost += pow(2, neuron[neuron.size() - 1][i] - 0);
-    }*/
     for (int i = 0; i < neuron[neuron.size() - 1].size(); ++i) {
-        if (i + 1 == targetValue) cost += neuron[neuron.size() - 1][i] - 1;
-        else cost += neuron[neuron.size() - 1][i] - 0;
+        if (i == targetValue) cost += pow(2, (1 - neuron[neuron.size() - 1][i]));
+        else cost += pow(2, (0 - neuron[neuron.size() - 1][i]));
     }
     return cost;
 }

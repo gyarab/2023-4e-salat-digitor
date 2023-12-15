@@ -6,8 +6,7 @@ def main():
     pixels = []
     for pixel in image.getdata():
         pixels.append(pixel[1])
-    print(len(pixels))
-    print(28*28)
+    print(pixels)
 
 
 if __name__ == "__main__":
