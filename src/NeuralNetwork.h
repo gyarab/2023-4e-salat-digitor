@@ -33,13 +33,13 @@ private:
 
     void setActivationType(int v);
 
-    static double ReLU(double v);
+    static long double ReLU(double v);
 
-    static double sigmoid(double v);
+    static long double sigmoid(double v);
 
-    [[nodiscard]] double activationFn(double v) const;
+    [[nodiscard]] long double activationFn(double v) const;
 
-    [[nodiscard]] double activationFnDerivative(double v);
+    [[nodiscard]] long double activationFnDerivative(double v);
 
     int activationType{};
     std::string filename;
@@ -52,9 +52,9 @@ private:
 
     double calculateCost(unsigned int targetValue);
 
-    double sigmoidDerivative(double v);
+    long double sigmoidDerivative(double v);
 
-    double ReLUDerivative(double v);
+    long double ReLUDerivative(double v);
 };
 
 

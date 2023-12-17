@@ -126,57 +126,49 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
 }
 
 void NeuralNetwork::backPropagate(double cost, std::vector<double> target, double learningRate) {
-    std::vector<double> errors;
-    std::vector<std::vector<double>> deltas;
-    errors.resize(layers.size() - 1);
-    deltas.resize(layers.size() - 1);
-    for (int i = weight.size() - 1; i >= 0; --i) {
-        for (int j = 0; j < weight[i].size(); ++j) {
-            for (int k = 0; k < weight[i][j].size(); ++k) {
-                int index = (neuron.size() - 1) - ((weight.size() - 1) - i);
-                double outputO1 = neuron[index][j];
-                double outputH1 = neuron[index - 1][k];
-                double localCost = (outputO1 - target[j]) * activationFnDerivative(outputO1) * outputH1;
-                weight[i][j][k] -= learningRate * localCost;
-            }
+    std::vector<double> relativeDeltaErrors(layers[layers.size() - 1]);
+    int lastLayerIndex = weight.size() - 1;
+    int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
+    /**
+     * back propagate last layer
+     */
+    for (int j = 0; j < weight[lastLayerIndex].size(); ++j) {
+        for (int k = 0; k < weight[lastLayerIndex][j].size(); ++k) {
+            double outputO1 = neuron[lastLayerNeuronsIndex][j];
+            double outputH1 = neuron[lastLayerNeuronsIndex - 1][k];
+            double localCost = (outputO1 - target[j]) * activationFnDerivative(outputO1) * outputH1;
+            weight[lastLayerIndex][j][k] -= learningRate * localCost;
         }
     }
-    /*for (int i = errors.size() - 1; i >= 0; --i) {
-        if (i == errors.size() - 1) {
-            deltas[i].resize(neuron[neuron.size() - 1].size());
-            errors[i] = cost;
-            for (int j = 0; j < deltas[i].size(); ++j) {
-                deltas[i][j] = errors[i] * target[j];
-            }
-        } else {
-            deltas[i].resize(neuron[i + 1].size());
-            for (int j = 0; j < weight[i].size(); ++j) {
-                for (int k = 0; k < weight[i][j].size(); ++k) {
-                    for (int l = 0; l < deltas[i + 1].size(); ++l) {
-                        errors[i] += weight[i][j][k] * deltas[i + 1][l];
+    /**
+     * back propagate the rest
+     */
+    for (int i = lastLayerIndex - 1; i >= 0; --i) {
+        for (int j = 0; j < weight[i].size(); ++j) {
+            for (int k = 0; k < weight[i][j].size(); ++k) {
+                long double localCost = 0;
+                for (int l = 0; l < relativeDeltaErrors.size(); ++l) {
+                    relativeDeltaErrors[l] = (neuron[lastLayerNeuronsIndex][l] - target[l]) * weight[i + 1][l][j] *
+                                             activationFnDerivative(neuron[i + 1][k]) * neuron[i][k] *
+                                             activationFnDerivative(neuron[lastLayerNeuronsIndex][l]);
+                    if (std::isnan(relativeDeltaErrors[l])) {
+                        std::cout << activationFnDerivative(neuron[i + 1][k]) << std::endl;
+                        std::cout << neuron[i + 1][k] << std::endl;
+                        std::cout << neuron[i + 1][k] * (1.0 - neuron[i + 1][k]) << std::endl;
+                        std::cout << 1 - neuron[i + 1][k] << std::endl;
+                        exit(69);
                     }
+                    localCost += relativeDeltaErrors[l];
+                }
+                weight[i][j][k] -= learningRate * localCost;
+                if (std::isnan(weight[i][j][k])) {
+                    std::cout << i << " " << j << " " << k << std::endl;
+                    std::cout << learningRate << " " << localCost << std::endl;
+                    exit(-1);
                 }
             }
-            for (int j = 0; j < neuron[i + 1].size(); ++j) {
-                deltas[i][j] = errors[i + 1] * activationFnDerivative(neuron[i + 1][j]);
-            }
         }
     }
-    for (int i = 0; i < weight.size(); ++i) {
-        std::vector<std::vector<double>> change;
-        change.resize(deltas[i].size());
-        for (int j = 0; j < deltas[i].size(); ++j) {
-            for (int k = 0; k < neuron[i].size(); ++k) {
-                change[j].resize(neuron[i].size());
-                change[j][k] = neuron[i][k] * deltas[i][j];
-            }
-        }
-        for (int j = 0; j < weight[i].size(); ++j) {
-            for (int k = 0; k < weight[i][j].size(); ++k) {
-                weight[i][j][k] += change[j][k] * learningRate;
-            }
-        }
-    }*/
 }
 
 double NeuralNetwork::calculateCost(unsigned int targetValue) {
@@ -188,24 +180,28 @@ double NeuralNetwork::calculateCost(unsigned int targetValue) {
     return cost;
 }
 
-double NeuralNetwork::ReLU(double v) {
+long double NeuralNetwork::ReLU(double v) {
     return v > 0 ? v : 0;
 }
 
-double NeuralNetwork::ReLUDerivative(double v) {
+long double NeuralNetwork::ReLUDerivative(double v) {
     return v > 0 ? 1 : 0;
 }
 
-double NeuralNetwork::sigmoid(double v) {
+long double NeuralNetwork::sigmoid(double v) {
     return 1.0 / (1.0 + exp(-v));
 }
 
-double NeuralNetwork::sigmoidDerivative(double v) {
-    return v * (1 - v);
+long double NeuralNetwork::sigmoidDerivative(double v) {
+    long double result = v * (1.0 - v);
+    if (std::isinf(result)) {
+        return v > 0 ? 1 : -1;
+    }
+    return result;
 }
 
 
-double NeuralNetwork::activationFn(double v) const {
+long double NeuralNetwork::activationFn(double v) const {
     switch (activationType) {
         case 0:
             return sigmoid(v);
@@ -315,7 +311,7 @@ void NeuralNetwork::setActivationType(int v) {
     this->activationType = v;
 }
 
-double NeuralNetwork::activationFnDerivative(double v) {
+long double NeuralNetwork::activationFnDerivative(double v) {
     switch (activationType) {
         case 0:
             return sigmoidDerivative(v);

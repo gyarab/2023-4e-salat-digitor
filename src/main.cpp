@@ -15,15 +15,15 @@ static void printVector(vector<double> v) {
 
 int main() {
     vector<unsigned int> layers = {784, 16, 16, 10};
-    NeuralNetwork d = NeuralNetwork("neuralNetwork(layers=4, id=2753).json");
-    vector<double> input;
+    NeuralNetwork d = NeuralNetwork("neuralNetwork(layers=4, id=3308).json");
+    /*vector<double> input;
     input.resize(784);
     for (int i = 0; i < 784; ++i) {
         cin >> input[i];
     }
-    printVector(d.feed(input));
-    /*vector<TrainData> train;
-    for (int j = 0; j < 100; j++) {
+    printVector(d.feed(input));*/
+    vector<TrainData> train;
+    for (int j = 0; j < 1000; j++) {
         vector<double> input;
         input.resize(784);
         for (int i = 0; i < 784; ++i) {
@@ -33,7 +33,7 @@ int main() {
         cin >> target;
         train.push_back({input, static_cast<unsigned int>(target)});
     }
-    d.train(train, 500, 0.6);*/
+    d.train(train, 1000, 0.6);
     /*vector<unsigned int> layers = {5, 2, 2, 4};
     vector<double> input = {1, 2, 3, 4, 5};
     vector<TrainData> trainData = {{{1, 2, 3, 4, 5}, 1},};
