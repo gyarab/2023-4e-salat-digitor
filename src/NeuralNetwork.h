@@ -12,6 +12,8 @@ public:
 
     explicit NeuralNetwork(const std::string &filename);
 
+    std::vector<unsigned int> layers;
+
     std::string toString();
 
     std::vector<double> feed(const std::vector<double> &input);
@@ -21,7 +23,8 @@ public:
 private:
     void feedForward();
 
-    void backPropagate(double cost, std::vector<double> target, double learningRate);
+    void backPropagate(double cost, std::vector<double> target, double learningRate,
+                       std::vector<std::vector<std::vector<double>>> &newWeights);
 
     void initJsonFile();
 
@@ -33,17 +36,16 @@ private:
 
     void setActivationType(int v);
 
-    static long double ReLU(double v);
+    static double ReLU(double v);
 
-    static long double sigmoid(double v);
+    static double sigmoid(double v);
 
-    [[nodiscard]] long double activationFn(double v) const;
+    [[nodiscard]] double activationFn(double v) const;
 
-    [[nodiscard]] long double activationFnDerivative(double v);
+    [[nodiscard]] double activationFnDerivative(double v) const;
 
     int activationType{};
     std::string filename;
-    std::vector<unsigned int> layers;
     std::vector<std::vector<double>> neuron;
     std::vector<std::vector<double>> bias;
     std::vector<std::vector<std::vector<double>>> weight;
@@ -52,9 +54,9 @@ private:
 
     double calculateCost(unsigned int targetValue);
 
-    long double sigmoidDerivative(double v);
+    static double sigmoidDerivative(double v);
 
-    long double ReLUDerivative(double v);
+    static double ReLUDerivative(double v);
 };
 
 

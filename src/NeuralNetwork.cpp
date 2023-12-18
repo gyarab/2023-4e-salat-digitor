@@ -102,6 +102,7 @@ void NeuralNetwork::feedForward() {
 void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int iterations, double learningRate) {
     double totalCost;
     for (int i = 0; i < iterations; ++i) {
+        std::vector<std::vector<std::vector<double>>> newWeights = weight;
         for (const auto &d: data) {
             if (d.image.size() != neuron[0].size()) {
                 std::cerr << "Wrong input format" << std::endl;
@@ -118,17 +119,18 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
                 if (j == d.value) target[j] = 1;
                 else target[j] = 0;
             }
-            backPropagate(totalCost, target, learningRate);
-
+            backPropagate(totalCost, target, learningRate, newWeights);
         }
+        weight = newWeights;
     }
     updateJsonFile();
 }
 
-void NeuralNetwork::backPropagate(double cost, std::vector<double> target, double learningRate) {
+void NeuralNetwork::backPropagate(double cost, std::vector<double> target, double learningRate,
+                                  std::vector<std::vector<std::vector<double>>> &newWeights) {
     std::vector<double> relativeDeltaErrors(layers[layers.size() - 1]);
-    int lastLayerIndex = weight.size() - 1;
-    int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
+    unsigned int lastLayerIndex = weight.size() - 1;
+    unsigned int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
     /**
      * back propagate last layer
      */
@@ -137,35 +139,23 @@ void NeuralNetwork::backPropagate(double cost, std::vector<double> target, doubl
             double outputO1 = neuron[lastLayerNeuronsIndex][j];
             double outputH1 = neuron[lastLayerNeuronsIndex - 1][k];
             double localCost = (outputO1 - target[j]) * activationFnDerivative(outputO1) * outputH1;
-            weight[lastLayerIndex][j][k] -= learningRate * localCost;
+            newWeights[lastLayerIndex][j][k] = weight[lastLayerIndex][j][k] - learningRate * localCost;
         }
     }
     /**
      * back propagate the rest
      */
-    for (int i = lastLayerIndex - 1; i >= 0; --i) {
+    for (int i = (int) (lastLayerIndex - 1); i >= 0; --i) {
         for (int j = 0; j < weight[i].size(); ++j) {
             for (int k = 0; k < weight[i][j].size(); ++k) {
-                long double localCost = 0;
+                double localCost = 0;
                 for (int l = 0; l < relativeDeltaErrors.size(); ++l) {
                     relativeDeltaErrors[l] = (neuron[lastLayerNeuronsIndex][l] - target[l]) * weight[i + 1][l][j] *
                                              activationFnDerivative(neuron[i + 1][k]) * neuron[i][k] *
                                              activationFnDerivative(neuron[lastLayerNeuronsIndex][l]);
-                    if (std::isnan(relativeDeltaErrors[l])) {
-                        std::cout << activationFnDerivative(neuron[i + 1][k]) << std::endl;
-                        std::cout << neuron[i + 1][k] << std::endl;
-                        std::cout << neuron[i + 1][k] * (1.0 - neuron[i + 1][k]) << std::endl;
-                        std::cout << 1 - neuron[i + 1][k] << std::endl;
-                        exit(69);
-                    }
                     localCost += relativeDeltaErrors[l];
                 }
-                weight[i][j][k] -= learningRate * localCost;
-                if (std::isnan(weight[i][j][k])) {
-                    std::cout << i << " " << j << " " << k << std::endl;
-                    std::cout << learningRate << " " << localCost << std::endl;
-                    exit(-1);
-                }
+                newWeights[i][j][k] = weight[i][j][k] - learningRate * localCost;
             }
         }
     }
@@ -180,20 +170,20 @@ double NeuralNetwork::calculateCost(unsigned int targetValue) {
     return cost;
 }
 
-long double NeuralNetwork::ReLU(double v) {
+double NeuralNetwork::ReLU(double v) {
     return v > 0 ? v : 0;
 }
 
-long double NeuralNetwork::ReLUDerivative(double v) {
+double NeuralNetwork::ReLUDerivative(double v) {
     return v > 0 ? 1 : 0;
 }
 
-long double NeuralNetwork::sigmoid(double v) {
+double NeuralNetwork::sigmoid(double v) {
     return 1.0 / (1.0 + exp(-v));
 }
 
-long double NeuralNetwork::sigmoidDerivative(double v) {
-    long double result = v * (1.0 - v);
+double NeuralNetwork::sigmoidDerivative(double v) {
+    double result = v * (1.0 - v);
     if (std::isinf(result)) {
         return v > 0 ? 1 : -1;
     }
@@ -201,12 +191,28 @@ long double NeuralNetwork::sigmoidDerivative(double v) {
 }
 
 
-long double NeuralNetwork::activationFn(double v) const {
+double NeuralNetwork::activationFn(double v) const {
     switch (activationType) {
         case 0:
             return sigmoid(v);
         case 1:
             return ReLU(v);
+        default:
+            std::cerr << "Invalid activation function" << std::endl;
+            exit(EXIT_FAILURE);
+    }
+}
+
+void NeuralNetwork::setActivationType(int v) {
+    this->activationType = v;
+}
+
+double NeuralNetwork::activationFnDerivative(double v) const {
+    switch (activationType) {
+        case 0:
+            return sigmoidDerivative(v);
+        case 1:
+            return ReLUDerivative(v);
         default:
             std::cerr << "Invalid activation function" << std::endl;
             exit(EXIT_FAILURE);
@@ -226,10 +232,11 @@ void NeuralNetwork::initRandom() {
     }
     for (auto &bia: bias) {
         for (double &j: bia) {
-            std::random_device rd;
+            /*std::random_device rd;
             std::mt19937 gen(rd());
             std::uniform_real_distribution<> dis(-1.0, 1.0);
-            j = dis(gen);
+            j = dis(gen);*/
+            j = 0;
         }
     }
     for (double &i: bias[bias.size() - 1]) {
@@ -237,29 +244,6 @@ void NeuralNetwork::initRandom() {
     }
 }
 
-std::string NeuralNetwork::toString() {
-    std::string result;
-    result += "neurons: \n";
-    for (auto &i: neuron) {
-        for (double j: i) {
-            result += std::to_string(j);
-            result += " ";
-        }
-        result += "\n";
-    }
-    result += "weights: \n";
-    for (auto &i: weight) {
-        for (auto &j: i) {
-            for (double k: j) {
-                result += std::to_string(k);
-                result += " ";
-            }
-            result += "\n";
-        }
-        result += "\n\n";
-    }
-    return result;
-}
 
 void NeuralNetwork::initJsonFile() {
     std::string file;
@@ -307,21 +291,28 @@ nlohmann::json NeuralNetwork::readJsonFile() {
     return json::parse(jsonString);
 }
 
-void NeuralNetwork::setActivationType(int v) {
-    this->activationType = v;
-}
 
-long double NeuralNetwork::activationFnDerivative(double v) {
-    switch (activationType) {
-        case 0:
-            return sigmoidDerivative(v);
-        case 1:
-            return ReLUDerivative(v);
-        default:
-            std::cerr << "Invalid activation function" << std::endl;
-            exit(EXIT_FAILURE);
+std::string NeuralNetwork::toString() {
+    std::string result;
+    result += "neurons: \n";
+    for (auto &i: neuron) {
+        for (double j: i) {
+            result += std::to_string(j);
+            result += " ";
+        }
+        result += "\n";
     }
+    result += "weights: \n";
+    for (auto &i: weight) {
+        for (auto &j: i) {
+            for (double k: j) {
+                result += std::to_string(k);
+                result += " ";
+            }
+            result += "\n";
+        }
+        result += "\n\n";
+    }
+    return result;
 }
-
-
 
