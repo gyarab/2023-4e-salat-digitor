@@ -123,7 +123,7 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
         }
         weight = newWeights;
         double progress = (double) i * 100 / iterations;
-        std::cout << "\rProgress: " << progress << std::flush << "%";
+        std::cout << "\rProgress: " << std::fixed << std::setprecision(2) << progress << "% " << std::flush;
     }
     std::cout << std::endl;
     updateJsonFile();
