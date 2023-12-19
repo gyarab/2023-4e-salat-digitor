@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
     std::signal(SIGINT, signalHandler);
 
-    if (argc < 1) {
+    if (argc < 2) {
         cerr << "Invalid output: Must contain at least one argument with the name of neural network file." << endl;
     }
 
@@ -69,6 +69,12 @@ int main(int argc, char *argv[]) {
     }
 
     if (newFile && train) {
+        if (argc < 8) {
+            cerr << "Missing arguments" << endl
+                 << "Expected: `./digitor -t -n <neurons_per_layer> <iterations> <learning_rate> <activation_function> <data_size>`"
+                 << endl;
+            exit(EXIT_FAILURE);
+        }
         neuronsPerLayer = charArrToVector(argv[3]);
         iterations = stoi(argv[4]);
         learningRate = stod(argv[5]);
@@ -87,6 +93,12 @@ int main(int argc, char *argv[]) {
         }
         n->train(trainData, iterations, learningRate);
     } else if (train) {
+        if (argc < 6) {
+            cerr << "Missing arguments" << endl
+                 << "Expected: `./digitor -t <filename> <iterations> <learning_rate> <data_size>`"
+                 << endl;
+            exit(EXIT_FAILURE);
+        }
         filename = argv[2];
         iterations = stoi(argv[3]);
         learningRate = stod(argv[4]);
@@ -104,6 +116,12 @@ int main(int argc, char *argv[]) {
         }
         n->train(trainData, iterations, learningRate);
     } else if (newFile) {
+        if (argc < 4) {
+            cerr << "Missing arguments" << endl
+                 << "Expected: `./digitor -n <neurons_per_layer> <activation_function>`"
+                 << endl;
+            exit(EXIT_FAILURE);
+        }
         neuronsPerLayer = charArrToVector(argv[2]);
         activationFn = argv[3];
         n = new NeuralNetwork(neuronsPerLayer, activationFn);
@@ -115,6 +133,12 @@ int main(int argc, char *argv[]) {
             printVector(n->feed(input));
         }
     } else {
+        if (argc < 2) {
+            cerr << "Missing arguments" << endl
+                 << "Expected: `./digitor <filename>`"
+                 << endl;
+            exit(EXIT_FAILURE);
+        }
         filename = argv[1];
         n = new NeuralNetwork(filename);
         while (true) {
