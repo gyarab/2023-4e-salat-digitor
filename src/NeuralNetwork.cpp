@@ -122,7 +122,10 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
             backPropagate(totalCost, target, learningRate, newWeights);
         }
         weight = newWeights;
+        double progress = (double) i * 100 / iterations;
+        std::cout << "\rProgress: " << progress << std::flush << "%";
     }
+    std::cout << std::endl;
     updateJsonFile();
 }
 
@@ -259,6 +262,10 @@ void NeuralNetwork::initJsonFile() {
     writeJsonFile();
 }
 
+void NeuralNetwork::saveProgress() {
+    writeJsonFile();
+}
+
 void NeuralNetwork::updateJsonFile() {
     writeJsonFile();
 }
@@ -315,4 +322,5 @@ std::string NeuralNetwork::toString() {
     }
     return result;
 }
+
 

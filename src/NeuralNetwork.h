@@ -20,6 +20,8 @@ public:
 
     void train(const std::vector<TrainData> &data, unsigned int iterations, double learningRate);
 
+    void saveProgress();
+
 private:
     void feedForward();
 
