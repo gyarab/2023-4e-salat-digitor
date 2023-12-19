@@ -5,16 +5,15 @@
 
 using namespace std;
 
-volatile std::sig_atomic_t g_signalStatus = 0;
-
 NeuralNetwork *n = nullptr;
-
+bool train = false; // -t
 
 void signalHandler(int signal) {
     if (signal == SIGINT) {
         std::cout << "\nCtrl+C detected. Saving progress and exiting...\n";
-        g_signalStatus = 1;
-        n->saveProgress();
+        if (train) {
+            n->saveProgress();
+        }
         delete n;
         exit(130);
     }
@@ -51,7 +50,6 @@ int main(int argc, char *argv[]) {
         cerr << "Invalid output: Must contain at least one argument with the name of neural network file." << endl;
     }
 
-    bool train = false; // -t
     bool newFile = false; // -n
     const char *filename;
     const char *activationFn;
