@@ -20,7 +20,7 @@ cd build
 #### Možnosti:
 
 * `[flags]`
-    * `-f`: Program se spustí v módu učení
+    * `-t`: Program se spustí v módu učení
     * `-n`: Program místo načítání dat z již existujícího souboru vytvoří nový
 * `[arguments]`
     * Příklad: `./digitor -t <jmeno_soubor> <počet_iterací> <rychlost_učení> <počet_dat>`
