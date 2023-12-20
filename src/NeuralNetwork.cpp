@@ -153,9 +153,9 @@ void NeuralNetwork::backPropagate(double cost, std::vector<double> target, doubl
             for (int k = 0; k < weight[i][j].size(); ++k) {
                 double localCost = 0;
                 for (int l = 0; l < relativeDeltaErrors.size(); ++l) {
-                    relativeDeltaErrors[l] = (neuron[lastLayerNeuronsIndex][l] - target[l]) * weight[i + 1][l][j] *
-                                             activationFnDerivative(neuron[i + 1][k]) * neuron[i][k] *
-                                             activationFnDerivative(neuron[lastLayerNeuronsIndex][l]);
+                    relativeDeltaErrors[l] = (neuron[i + 1][l] - target[l]) * weight[i + 1][l][j] *
+                                             activationFnDerivative(neuron[i + 1][l]) * neuron[i][k] *
+                                             activationFnDerivative(neuron[i][k]);
                     localCost += relativeDeltaErrors[l];
                 }
                 newWeights[i][j][k] = weight[i][j][k] - learningRate * localCost;
@@ -186,10 +186,8 @@ double NeuralNetwork::sigmoid(double v) {
 }
 
 double NeuralNetwork::sigmoidDerivative(double v) {
-    double result = v * (1.0 - v);
-    if (std::isinf(result)) {
-        return v > 0 ? 1 : -1;
-    }
+    double sig = sigmoid(v);
+    double result = sig * (1.0 - sig);
     return result;
 }
 
