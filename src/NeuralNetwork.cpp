@@ -76,6 +76,7 @@ std::vector<double> NeuralNetwork::feed(const std::vector<double> &input) {
         neuron[0][i] = input[i];
     }
     feedForward();
+    softmaxOutput();
     std::vector<double> result;
     for (double i: neuron[neuron.size() - 1]) {
         result.push_back(i);
@@ -97,6 +98,7 @@ void NeuralNetwork::feedForward() {
             neuron[i][j] = activationFn(neuron[i][j] + bias[i][j]);
         }
     }
+    // softmaxOutput();
 }
 
 void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int iterations, double learningRate) {
@@ -125,7 +127,7 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
         double progress = (double) i * 100 / iterations;
         double totalCost = cost / (double) data.size();
         std::cout << "\rProgress: " << std::fixed << std::setprecision(2) << progress << "% | " << "Total cost: "
-                  << std::fixed << std::setprecision(5) << totalCost << std::flush;
+                  << std::fixed << std::setprecision(8) << totalCost << std::flush;
     }
     std::cout << std::endl;
     updateJsonFile();
@@ -143,7 +145,10 @@ void NeuralNetwork::backPropagate(double cost, std::vector<double> target, doubl
         for (int k = 0; k < weight[lastLayerIndex][j].size(); ++k) {
             double outputO1 = neuron[lastLayerNeuronsIndex][j];
             double outputH1 = neuron[lastLayerNeuronsIndex - 1][k];
-            double localCost = (outputO1 - target[j]) * activationFnDerivative(outputO1) * outputH1;
+            double localCost =
+                    (outputO1 - target[j]) *
+                    /*softmaxDerivative(neuron[lastLayerIndex])[j]*/
+                    activationFnDerivative(outputO1) * outputH1;
             newWeights[lastLayerIndex][j][k] = newWeights[lastLayerIndex][j][k] - learningRate * localCost;
         }
     }
@@ -155,10 +160,14 @@ void NeuralNetwork::backPropagate(double cost, std::vector<double> target, doubl
             for (int k = 0; k < weight[i][j].size(); ++k) {
                 double localCost = 0;
                 for (int l = 0; l < relativeDeltaErrors.size(); ++l) {
-                    relativeDeltaErrors[l] = (neuron[i + 1][l] - target[l]) * weight[i + 1][l][j] *
-                                             activationFnDerivative(neuron[i + 1][l]) * neuron[i][k] *
-                                             activationFnDerivative(neuron[i][k]);
-                    localCost += relativeDeltaErrors[l];
+                    double x = (neuron[lastLayerIndex][l] - target[l]) * neuron[lastLayerIndex][l] *
+                               (1 - neuron[lastLayerIndex][l]) *
+                               weight[i + 1][l][j] *
+                               activationFnDerivative(neuron[i + 1][l]) * neuron[i][k] *
+                               activationFnDerivative(neuron[i][k]);
+
+                    localCost += relativeDeltaErrors[l] * x;
+                    relativeDeltaErrors[l] = x;
                 }
                 newWeights[i][j][k] = newWeights[i][j][k] - learningRate * localCost;
             }
@@ -193,6 +202,34 @@ double NeuralNetwork::sigmoid(double v) {
 double NeuralNetwork::sigmoidDerivative(double v) {
     double sig = sigmoid(v);
     double result = sig * (1.0 - sig);
+    return result;
+}
+
+
+void NeuralNetwork::softmaxOutput() {
+    double sumOfExp = 0;
+    for (auto &i: neuron[neuron.size() - 1]) {
+        sumOfExp += exp(i);
+    }
+    for (auto &i: neuron[neuron.size() - 1]) {
+        i = exp(i) / sumOfExp;
+    }
+}
+
+
+std::vector<double> NeuralNetwork::softmaxDerivative(const std::vector<double> &softmaxOutput) {
+    std::vector<double> result;
+    int size = softmaxOutput.size();
+
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if (i == j) {
+                result.push_back(softmaxOutput[i] * (1.0 - softmaxOutput[i]));
+            } else {
+                result.push_back(-softmaxOutput[i] * softmaxOutput[j]);
+            }
+        }
+    }
     return result;
 }
 
@@ -265,13 +302,16 @@ void NeuralNetwork::initJsonFile() {
     writeJsonFile();
 }
 
+
 void NeuralNetwork::saveProgress() {
     writeJsonFile();
 }
 
+
 void NeuralNetwork::updateJsonFile() {
     writeJsonFile();
 }
+
 
 void NeuralNetwork::writeJsonFile() {
     std::ofstream output_file(filename);
@@ -289,6 +329,7 @@ void NeuralNetwork::writeJsonFile() {
         std::cerr << "Failed to open the output file." << std::endl;
     }
 }
+
 
 nlohmann::json NeuralNetwork::readJsonFile() {
     std::ifstream jFile(filename);

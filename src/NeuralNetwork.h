@@ -42,6 +42,10 @@ private:
 
     static double sigmoid(double v);
 
+    void softmaxOutput();
+
+    static std::vector<double> softmaxDerivative(const std::vector<double> &softmaxOutput);
+
     [[nodiscard]] double activationFn(double v) const;
 
     [[nodiscard]] double activationFnDerivative(double v) const;
