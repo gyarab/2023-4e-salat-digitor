@@ -76,7 +76,7 @@ std::vector<double> NeuralNetwork::feed(const std::vector<double> &input) {
         neuron[0][i] = input[i];
     }
     feedForward();
-    softmaxOutput();
+    //softmaxOutput();
     std::vector<double> result;
     for (double i: neuron[neuron.size() - 1]) {
         result.push_back(i);
@@ -98,7 +98,7 @@ void NeuralNetwork::feedForward() {
             neuron[i][j] = activationFn(neuron[i][j] + bias[i][j]);
         }
     }
-    // softmaxOutput();
+    //softmaxOutput();
 }
 
 void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int iterations, double learningRate) {
@@ -135,7 +135,11 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
 
 void NeuralNetwork::backPropagate(double cost, std::vector<double> target, double learningRate,
                                   std::vector<std::vector<std::vector<double>>> &newWeights) {
-    std::vector<double> relativeDeltaErrors(layers[layers.size() - 1]);
+    std::vector<std::vector<double>> relativeDeltaErrors;
+    relativeDeltaErrors.resize(layers.size());
+    for (int i = 0; i < layers.size(); ++i) {
+        relativeDeltaErrors[i].resize(layers[i]);
+    }
     unsigned int lastLayerIndex = weight.size() - 1;
     unsigned int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
     /**
@@ -143,12 +147,10 @@ void NeuralNetwork::backPropagate(double cost, std::vector<double> target, doubl
      */
     for (int j = 0; j < weight[lastLayerIndex].size(); ++j) {
         for (int k = 0; k < weight[lastLayerIndex][j].size(); ++k) {
-            double outputO1 = neuron[lastLayerNeuronsIndex][j];
-            double outputH1 = neuron[lastLayerNeuronsIndex - 1][k];
-            double localCost =
-                    (outputO1 - target[j]) *
-                    /*softmaxDerivative(neuron[lastLayerIndex])[j]*/
-                    activationFnDerivative(outputO1) * outputH1;
+            double outputO = neuron[lastLayerNeuronsIndex][j];
+            double outputH = neuron[lastLayerNeuronsIndex - 1][k];
+            double localCost = (outputO - target[j]) * activationFnDerivative(outputO) * outputH;
+            relativeDeltaErrors[layers.size() - 2][k] *= localCost;
             newWeights[lastLayerIndex][j][k] = newWeights[lastLayerIndex][j][k] - learningRate * localCost;
         }
     }
@@ -158,21 +160,14 @@ void NeuralNetwork::backPropagate(double cost, std::vector<double> target, doubl
     for (int i = (int) (lastLayerIndex - 1); i >= 0; --i) {
         for (int j = 0; j < weight[i].size(); ++j) {
             for (int k = 0; k < weight[i][j].size(); ++k) {
-                double localCost = 0;
-                for (int l = 0; l < relativeDeltaErrors.size(); ++l) {
-                    double x = (neuron[lastLayerIndex][l] - target[l]) * neuron[lastLayerIndex][l] *
-                               (1 - neuron[lastLayerIndex][l]) *
-                               weight[i + 1][l][j] *
-                               activationFnDerivative(neuron[i + 1][l]) * neuron[i][k] *
-                               activationFnDerivative(neuron[i][k]);
-
-                    localCost += relativeDeltaErrors[l] * x;
-                    relativeDeltaErrors[l] = x;
-                }
+                double localCost =
+                        activationFnDerivative(neuron[i + 1][k]) * neuron[i][k] * relativeDeltaErrors[i + 1][j];
+                relativeDeltaErrors[i][j] *= localCost;
                 newWeights[i][j][k] = newWeights[i][j][k] - learningRate * localCost;
             }
         }
     }
+
 }
 
 double NeuralNetwork::calculateCost(unsigned int targetValue) {
@@ -184,7 +179,7 @@ double NeuralNetwork::calculateCost(unsigned int targetValue) {
             cost += pow((0 - neuron[neuron.size() - 1][i]), 2);
         }
     }
-    return cost / (double) neuron[neuron.size() - 1].size();
+    return cost;
 }
 
 double NeuralNetwork::ReLU(double v) {
@@ -219,10 +214,8 @@ void NeuralNetwork::softmaxOutput() {
 
 std::vector<double> NeuralNetwork::softmaxDerivative(const std::vector<double> &softmaxOutput) {
     std::vector<double> result;
-    int size = softmaxOutput.size();
-
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
+    for (int i = 0; i < softmaxOutput.size(); ++i) {
+        for (int j = 0; j < softmaxOutput.size(); ++j) {
             if (i == j) {
                 result.push_back(softmaxOutput[i] * (1.0 - softmaxOutput[i]));
             } else {

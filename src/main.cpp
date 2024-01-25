@@ -144,7 +144,10 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < n->layers[0]; ++i) {
                 cin >> input[i];
             }
-            printVector(n->feed(input));
+            vector<double> output = n->feed(input);
+            printVector(output);
+            unsigned int estimation = max_element(output.begin(), output.end()) - output.begin();
+            cout << estimation << " -> " << std::fixed << std::setprecision(2) << output[estimation] * 100 << "%" << endl;
         }
     }
     return 0;
