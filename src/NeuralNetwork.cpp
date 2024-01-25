@@ -128,7 +128,7 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
         double totalCost = cost / (double) data.size();
         std::cout << "\rProgress: " << std::fixed << std::setprecision(2) << progress << "% | " << "Total cost: "
                   << std::fixed << std::setprecision(8) << totalCost << std::flush;
-        if (i % 10 == 0) updateJsonFile();
+        //if (i % 10 == 0) updateJsonFile();
     }
     std::cout << std::endl;
     updateJsonFile();
@@ -139,7 +139,7 @@ void NeuralNetwork::backPropagate(double cost, std::vector<double> target, doubl
     std::vector<std::vector<double>> relativeDeltaErrors;
     relativeDeltaErrors.resize(layers.size());
     for (int i = 0; i < layers.size(); ++i) {
-        relativeDeltaErrors[i].resize(layers[i]);
+        relativeDeltaErrors[i].resize(layers[i], 1);
     }
     unsigned int lastLayerIndex = weight.size() - 1;
     unsigned int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
