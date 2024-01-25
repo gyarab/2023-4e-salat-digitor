@@ -128,6 +128,7 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
         double totalCost = cost / (double) data.size();
         std::cout << "\rProgress: " << std::fixed << std::setprecision(2) << progress << "% | " << "Total cost: "
                   << std::fixed << std::setprecision(8) << totalCost << std::flush;
+        if (i % 10 == 0) updateJsonFile();
     }
     std::cout << std::endl;
     updateJsonFile();
