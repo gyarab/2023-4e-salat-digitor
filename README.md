@@ -23,4 +23,12 @@ cd build
     * `-t`: Program se spustí v módu učení
     * `-n`: Program místo načítání dat z již existujícího souboru vytvoří nový
 * `[arguments]`
-    * Příklad: `./digitor -t <jmeno_soubor> <počet_iterací> <rychlost_učení> <počet_dat>`
+    * Použití:
+        * `./digitor -t -n <neurony_ve_vrstvach> <počet_iterací> <rychlost_učení> <aktivační_funkce> <počet_dat>`
+        * `./digitor -t <jméno_soubor> <počet_iterací> <rychlost_učení> <počet_dat>`
+        * `./digitor -n <neurony_ve_vrstvach> <aktivační_funkce>`
+        * `./digitor <jméno_souboru>`
+    * Příklady:
+        * `./digitor -t -n "784,16,16,10" 1000 0.001 sigmoid 10`
+        * `./digitor neuralnetwork.json`
+        
