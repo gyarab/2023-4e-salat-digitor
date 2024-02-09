@@ -53,6 +53,7 @@ private:
     int activationType{};
     std::string filename;
     std::vector<std::vector<double>> neuron;
+    std::vector<std::vector<double>> rawNeuron;
     std::vector<std::vector<double>> bias;
     std::vector<std::vector<std::vector<double>>> weight;
 
