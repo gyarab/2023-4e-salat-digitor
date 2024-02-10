@@ -1,5 +1,5 @@
 #! /bin/bash
-mkdir build
+mkdir build 2> /dev/null
 cp digitor.json build/
 cd build
 cmake ..
