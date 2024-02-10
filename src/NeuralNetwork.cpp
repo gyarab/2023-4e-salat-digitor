@@ -79,7 +79,6 @@ std::vector<double> NeuralNetwork::feed(const std::vector<double> &input) {
         rawNeuron[0][i] = input[i];
     }
     feedForward();
-    //softmaxOutput();
     std::vector<double> result;
     for (long double i: neuron[neuron.size() - 1]) {
         result.push_back((double) i);
@@ -102,10 +101,11 @@ void NeuralNetwork::feedForward() {
             neuron[i][j] = activationFn(rawNeuron[i][j] + bias[i][j]);
         }
     }
-    //softmaxOutput();
 }
 
 void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int iterations, long double learningRate) {
+    std::vector<std::vector<std::vector<long double>>> minCostWeights;
+    double minCost = -1;
     for (int i = 0; i < iterations; ++i) {
         double cost = 0;
         std::vector<std::vector<std::vector<long double>>> newWeights = weight;
@@ -130,12 +130,23 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
         weight = newWeights;
         double progress = (double) i * 100 / iterations;
         double totalCost = cost / (double) data.size();
+        if (totalCost < minCost || minCost == -1) {
+            minCost = totalCost;
+            minCostWeights = weight;
+        }
         std::cout << "\rProgress: " << std::fixed << std::setprecision(2) << progress << "% | " << "Total cost: "
                   << std::fixed << std::setprecision(8) << totalCost << std::flush;
-        //if (i % 10 == 0) updateJsonFile();
+        if (i % 100 == 0) saveProgress();
     }
-    std::cout << std::endl;
-    updateJsonFile();
+    std::cout << "Do you want to save rather the result with minimal cost than the last result (y/n) ";
+    char answer;
+    std::cin >> answer;
+    if (tolower(answer) == 'y') {
+        writeJsonFile(minCostWeights, bias, true);
+    } else {
+        std::cout << "Invalid input. The last result will be saved." << std::endl;
+        updateJsonFile();
+    }
 }
 
 void NeuralNetwork::backPropagate(std::vector<double> target, long double learningRate,
@@ -184,7 +195,7 @@ void NeuralNetwork::backPropagate(std::vector<double> target, long double learni
             long double subtotal = 0;
             for (int l = 0; l < relativeDeltaErrors[i + 2].size(); ++l) {
                 subtotal += relativeDeltaErrors[i + 2][l] * activationFnDerivative(rawNeuron[i + 1][j]) *
-                            newWeights[i][l][j];
+                            newWeights[i + 1][l][j];
             }
             relativeDeltaErrors[i + 1][j] = subtotal;
             for (int k = 0; k < weight[i][j].size(); ++k) {
@@ -231,7 +242,6 @@ long double NeuralNetwork::sigmoidDerivative(long double v) {
     long double result = sig * (1.0 - sig);
     return result;
 }
-
 
 
 long double NeuralNetwork::activationFn(long double v) const {
@@ -299,32 +309,33 @@ void NeuralNetwork::initJsonFile() {
             ").json";
     std::ofstream output_file(file);
     filename = file;
-    writeJsonFile();
+    writeJsonFile(weight, bias, true);
 }
 
 
 void NeuralNetwork::saveProgress() {
-    writeJsonFile();
+    writeJsonFile(weight, bias, false);
 }
 
 
 void NeuralNetwork::updateJsonFile() {
-    writeJsonFile();
+    writeJsonFile(weight, bias, true);
 }
 
 
-void NeuralNetwork::writeJsonFile() {
+void NeuralNetwork::writeJsonFile(std::vector<std::vector<std::vector<long double>>> &weightToSave,
+                                  std::vector<std::vector<long double>> &biasToSave, bool print) {
     std::ofstream output_file(filename);
     if (output_file.is_open()) {
         json data;
         data["activation"] = activationType;
         data["layer"] = layers;
-        data["weights"] = weight;
-        data["biases"] = bias;
+        data["weights"] = weightToSave;
+        data["biases"] = biasToSave;
         std::string stringData = data.dump(4);
         output_file << data.dump(4);
         output_file.close();
-        std::cout << "JSON data saved to '" << filename << "'" << std::endl;
+        if (print) std::cout << "JSON data saved to '" << filename << "'" << std::endl;
     } else {
         std::cerr << "Failed to open the output file." << std::endl;
     }

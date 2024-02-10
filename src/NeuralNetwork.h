@@ -53,7 +53,9 @@ private:
     std::vector<std::vector<long double>> bias;
     std::vector<std::vector<std::vector<long double>>> weight;
 
-    void writeJsonFile();
+
+    void writeJsonFile(std::vector<std::vector<std::vector<long double>>> &weightToSave,
+                       std::vector<std::vector<long double>> &biasToSave, bool print);
 
     double calculateCost(unsigned int targetValue);
 
