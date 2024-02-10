@@ -18,15 +18,15 @@ public:
 
     std::vector<double> feed(const std::vector<double> &input);
 
-    void train(const std::vector<TrainData> &data, unsigned int iterations, double learningRate);
+    void train(const std::vector<TrainData> &data, unsigned int iterations, long double learningRate);
 
     void saveProgress();
 
 private:
     void feedForward();
 
-    void backPropagate(double cost, std::vector<double> target, double learningRate,
-                       std::vector<std::vector<std::vector<double>>> &newWeights);
+    void backPropagate(std::vector<double> target, long double learningRate,
+                       std::vector<std::vector<std::vector<long double>>> &newWeights);
 
     void initJsonFile();
 
@@ -38,32 +38,28 @@ private:
 
     void setActivationType(int v);
 
-    static double ReLU(double v);
+    static long double ReLU(long double v);
 
-    static double sigmoid(double v);
+    static long double sigmoid(long double v);
 
-    void softmaxOutput();
+    [[nodiscard]] long double activationFn(long double v) const;
 
-    static std::vector<double> softmaxDerivative(const std::vector<double> &softmaxOutput);
-
-    [[nodiscard]] double activationFn(double v) const;
-
-    [[nodiscard]] double activationFnDerivative(double v) const;
+    [[nodiscard]] long double activationFnDerivative(long double v) const;
 
     int activationType{};
     std::string filename;
-    std::vector<std::vector<double>> neuron;
-    std::vector<std::vector<double>> rawNeuron;
-    std::vector<std::vector<double>> bias;
-    std::vector<std::vector<std::vector<double>>> weight;
+    std::vector<std::vector<long double>> neuron;
+    std::vector<std::vector<long double>> rawNeuron;
+    std::vector<std::vector<long double>> bias;
+    std::vector<std::vector<std::vector<long double>>> weight;
 
     void writeJsonFile();
 
     double calculateCost(unsigned int targetValue);
 
-    static double sigmoidDerivative(double v);
+    static long double sigmoidDerivative(long double v);
 
-    static double ReLUDerivative(double v);
+    static long double ReLUDerivative(long double v);
 };
 
 
