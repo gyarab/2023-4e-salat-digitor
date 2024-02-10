@@ -136,7 +136,7 @@ void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int itera
         }
         std::cout << "\rProgress: " << std::fixed << std::setprecision(2) << progress << "% | " << "Total cost: "
                   << std::fixed << std::setprecision(8) << totalCost << std::flush;
-        if (i % 100 == 0) saveProgress();
+        if (i % 10000 == 0) saveProgress();
     }
     std::cout << "Do you want to save rather the result with minimal cost than the last result (y/n) ";
     char answer;
