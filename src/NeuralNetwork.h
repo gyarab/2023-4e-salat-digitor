@@ -18,7 +18,7 @@ public:
 
     std::vector<double> feed(const std::vector<double> &input);
 
-    void train(const std::vector<TrainData> &data, unsigned int iterations, long double learningRate);
+    void train(const std::vector<std::vector<TrainData>> &data, unsigned int iterations, long double learningRate);
 
     void saveProgress();
 

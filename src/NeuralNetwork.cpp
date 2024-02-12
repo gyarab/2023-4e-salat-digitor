@@ -103,50 +103,45 @@ void NeuralNetwork::feedForward() {
     }
 }
 
-void NeuralNetwork::train(const std::vector<TrainData> &data, unsigned int iterations, long double learningRate) {
+void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsigned int iterations,
+                          long double learningRate) {
     std::vector<std::vector<std::vector<long double>>> minCostWeights;
     double minCost = -1;
     for (int i = 0; i < iterations; ++i) {
         double cost = 0;
-        std::vector<std::vector<std::vector<long double>>> newWeights = weight;
-        for (const auto &d: data) {
-            if (d.image.size() != neuron[0].size()) {
-                std::cerr << "Wrong input format" << std::endl;
-                exit(EXIT_FAILURE);
+        std::vector<std::vector<std::vector<long double>>> newWeights(weight);
+        for (auto &set: data) {
+            for (const auto &d: set) {
+                if (d.image.size() != neuron[0].size()) {
+                    std::cerr << "Wrong input format" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                for (int j = 0; j < d.image.size(); ++j) {
+                    neuron[0][j] = d.image[j];
+                }
+                feedForward();
+                cost += calculateCost(d.value);
+                std::vector<double> target;
+                target.resize(layers[layers.size() - 1]);
+                for (int j = 0; j < target.size(); ++j) {
+                    if (j == d.value) target[j] = 1;
+                    else target[j] = 0;
+                }
+                backPropagate(target, learningRate, newWeights);
             }
-            for (int j = 0; j < d.image.size(); ++j) {
-                neuron[0][j] = d.image[j];
-            }
-            feedForward();
-            cost += calculateCost(d.value);
-            std::vector<double> target;
-            target.resize(layers[layers.size() - 1]);
-            for (int j = 0; j < target.size(); ++j) {
-                if (j == d.value) target[j] = 1;
-                else target[j] = 0;
-            }
-            backPropagate(target, learningRate, newWeights);
+            weight = newWeights;
         }
-        weight = newWeights;
         double progress = (double) i * 100 / iterations;
-        double totalCost = cost / (double) data.size();
+        double totalCost = cost / ((double) data.size() * (double) data[0].size());
         if (totalCost < minCost || minCost == -1) {
             minCost = totalCost;
             minCostWeights = weight;
         }
         std::cout << "\rProgress: " << std::fixed << std::setprecision(2) << progress << "% | " << "Total cost: "
                   << std::fixed << std::setprecision(8) << totalCost << std::flush;
-        if (i % 10000 == 0) saveProgress();
+        if (i % 1000 == 0) saveProgress();
     }
-    std::cout << "Do you want to save rather the result with minimal cost than the last result (y/n) ";
-    char answer;
-    std::cin >> answer;
-    if (tolower(answer) == 'y') {
-        writeJsonFile(minCostWeights, bias, true);
-    } else {
-        std::cout << "Invalid input. The last result will be saved." << std::endl;
-        updateJsonFile();
-    }
+    updateJsonFile();
 }
 
 void NeuralNetwork::backPropagate(std::vector<double> target, long double learningRate,
@@ -195,7 +190,7 @@ void NeuralNetwork::backPropagate(std::vector<double> target, long double learni
             long double subtotal = 0;
             for (int l = 0; l < relativeDeltaErrors[i + 2].size(); ++l) {
                 subtotal += relativeDeltaErrors[i + 2][l] * activationFnDerivative(rawNeuron[i + 1][j]) *
-                            newWeights[i + 1][l][j];
+                            weight[i + 1][l][j];
             }
             relativeDeltaErrors[i + 1][j] = subtotal;
             for (int k = 0; k < weight[i][j].size(); ++k) {

@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
     vector<unsigned int> neuronsPerLayer;
     unsigned int iterations;
     unsigned int data_size;
+    unsigned int batches;
     double learningRate;
 
     for (int i = 1; i < argc; ++i) {
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
     if (newFile && train) {
         if (argc < 8) {
             cerr << "Missing arguments" << endl
-                 << "Expected: `./digitor -t -n <neurons_per_layer> <iterations> <learning_rate> <activation_function> <data_size>`"
+                 << "Expected: `./digitor -t -n <neurons_per_layer> <iterations> <learning_rate> <activation_function> <batches> <batch_size>`"
                  << endl;
             exit(EXIT_FAILURE);
         }
@@ -77,40 +78,46 @@ int main(int argc, char *argv[]) {
         iterations = stoi(argv[4]);
         learningRate = stod(argv[5]);
         activationFn = argv[6];
-        data_size = stoi(argv[7]);
+        batches = stoi(argv[7]);
+        data_size = stoi(argv[8]);
         n = new NeuralNetwork(neuronsPerLayer, activationFn);
-        vector<TrainData> trainData;
-        for (int i = 0; i < data_size; ++i) {
-            vector<double> input(neuronsPerLayer[0]);
-            for (int j = 0; j < neuronsPerLayer[0]; ++j) {
-                cin >> input[j];
+        vector<vector<TrainData>> trainData(batches);
+        for (int i = 0; i < batches; ++i) {
+            for (int j = 0; j < data_size; ++j) {
+                vector<double> input(neuronsPerLayer[0]);
+                for (int k = 0; k < neuronsPerLayer[0]; ++k) {
+                    cin >> input[k];
+                }
+                unsigned int target;
+                cin >> target;
+                trainData[i].push_back({input, target});
             }
-            unsigned int target;
-            cin >> target;
-            trainData.push_back({input, target});
         }
         n->train(trainData, iterations, learningRate);
     } else if (train) {
         if (argc < 6) {
             cerr << "Missing arguments" << endl
-                 << "Expected: `./digitor -t <filename> <iterations> <learning_rate> <data_size>`"
+                 << "Expected: `./digitor -t <filename> <iterations> <learning_rate> <batches> <batch_size>`"
                  << endl;
             exit(EXIT_FAILURE);
         }
         filename = argv[2];
         iterations = stoi(argv[3]);
         learningRate = stod(argv[4]);
-        data_size = stoi(argv[5]);
+        batches = stoi(argv[5]);
+        data_size = stoi(argv[6]);
         n = new NeuralNetwork(filename);
-        vector<TrainData> trainData;
-        for (int i = 0; i < data_size; ++i) {
-            vector<double> input(n->layers[0]);
-            for (int j = 0; j < n->layers[0]; ++j) {
-                cin >> input[j];
+        vector<vector<TrainData>> trainData(batches);
+        for (int i = 0; i < batches; ++i) {
+            for (int j = 0; j < data_size; ++j) {
+                vector<double> input(n->layers[0]);
+                for (int k = 0; k < n->layers[0]; ++k) {
+                    cin >> input[k];
+                }
+                int target;
+                cin >> target;
+                trainData[i].push_back({input, static_cast<unsigned int>(target)});
             }
-            int target;
-            cin >> target;
-            trainData.push_back({input, static_cast<unsigned int>(target)});
         }
         n->train(trainData, iterations, learningRate);
     } else if (newFile) {
@@ -147,7 +154,8 @@ int main(int argc, char *argv[]) {
             vector<double> output = n->feed(input);
             printVector(output);
             unsigned int estimation = max_element(output.begin(), output.end()) - output.begin();
-            cout << estimation << " -> " << std::fixed << std::setprecision(2) << output[estimation] * 100 << "%" << endl;
+            cout << estimation << " -> " << std::fixed << std::setprecision(2) << output[estimation] * 100 << "%"
+                 << endl;
         }
     }
     return 0;
