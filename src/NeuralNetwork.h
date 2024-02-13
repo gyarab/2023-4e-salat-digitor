@@ -25,7 +25,8 @@ public:
 private:
     void feedForward();
 
-    void backPropagate(std::vector<double> target, long double learningRate,
+    void backPropagate(std::vector<double> target, std::vector<std::vector<long double>> &relativeDeltaErrors,
+                       long double learningRate,
                        std::vector<std::vector<std::vector<long double>>> &newWeights);
 
     void initJsonFile();
