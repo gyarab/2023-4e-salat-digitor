@@ -6,6 +6,9 @@
 #include "TrainData.h"
 #include "nlohmann/json.hpp"
 
+#include <omp.h>
+#include "mutex"
+
 using json = nlohmann::json;
 
 NeuralNetwork::NeuralNetwork(const std::vector<unsigned int> &neuronsPerLayer, const char *activationFn = "sigmoid") {
@@ -105,12 +108,13 @@ void NeuralNetwork::feedForward() {
 
 void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsigned int iterations,
                           long double learningRate) {
-    std::vector<std::vector<std::vector<long double>>> minCostWeights;
+    std::vector<std::vector<std::vector<long double>>>
+            minCostWeights;
+    std::vector<std::vector<std::vector<long double>>> newWeights;
     std::vector<std::vector<long double>> relativeDeltaErrors;
     relativeDeltaErrors.resize(layers.size());
-    std::vector<std::vector<std::vector<long double>>> newWeights = weight;
-    for (int i = 0; i < layers.size(); ++i) {
-        relativeDeltaErrors[i].resize(layers[i]);
+    for (int j = 0; j < layers.size(); ++j) {
+        relativeDeltaErrors[j].resize(layers[j], 0);
     }
     double minCost = -1;
     for (int i = 0; i < iterations; ++i) {
@@ -151,17 +155,11 @@ void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsig
 }
 
 void NeuralNetwork::backPropagate(std::vector<double> target,
-                                  std::vector<std::vector<long double>> &relativeDeltaErrors,
+                                  std::vector<std::vector<long double>> relativeDeltaErrors,
                                   long double learningRate,
                                   std::vector<std::vector<std::vector<long double>>> &newWeights) {
-    for (auto &relativeDeltaError: relativeDeltaErrors) {
-        for (long double &j: relativeDeltaError) {
-            j = 0;
-        }
-    }
     unsigned int lastLayerIndex = weight.size() - 1;
     unsigned int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
-
     /**
      * back propagate last layer
      *
@@ -172,16 +170,15 @@ void NeuralNetwork::backPropagate(std::vector<double> target,
      * newWeight -= localCost * learningRate
      *
      */
-    for (int j = 0; j < weight[lastLayerIndex].size(); ++j) {
-        long double output = neuron[lastLayerNeuronsIndex][j];
-        relativeDeltaErrors[lastLayerNeuronsIndex][j] = 2 * (output - target[j]);
-        for (int k = 0; k < weight[lastLayerIndex][j].size(); ++k) {
-            long double source = neuron[lastLayerNeuronsIndex - 1][k];
-            long double rawSource = rawNeuron[lastLayerNeuronsIndex - 1][k];
+    for (int i = 0; i < weight[lastLayerIndex].size(); ++i) {
+        long double output = neuron[lastLayerNeuronsIndex][i];
+        relativeDeltaErrors[lastLayerNeuronsIndex][i] = 2 * (output - target[i]);
+        for (int j = 0; j < weight[lastLayerIndex][i].size(); ++j) {
+            long double source = neuron[lastLayerNeuronsIndex - 1][j];
+            long double rawSource = rawNeuron[lastLayerNeuronsIndex - 1][j];
             long double localError =
-                    relativeDeltaErrors[lastLayerNeuronsIndex][j] * activationFnDerivative(rawSource) * source;
-            newWeights[lastLayerIndex][j][k] -= (long double) learningRate * localError;
-
+                    relativeDeltaErrors[lastLayerNeuronsIndex][i] * activationFnDerivative(rawSource) * source;
+            newWeights[lastLayerIndex][i][j] -= learningRate * localError;
         }
     }
 

@@ -25,7 +25,7 @@ public:
 private:
     void feedForward();
 
-    void backPropagate(std::vector<double> target, std::vector<std::vector<long double>> &relativeDeltaErrors,
+    void backPropagate(std::vector<double> target, std::vector<std::vector<long double>> relativeDeltaErrors,
                        long double learningRate,
                        std::vector<std::vector<std::vector<long double>>> &newWeights);
 
