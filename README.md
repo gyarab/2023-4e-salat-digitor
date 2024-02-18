@@ -6,7 +6,7 @@ Digitor je neuronová síť.
 
 ```sh
 git clone https://github.com/gyarab/2023-4e-salat-digitor.git
-cd 2023-4e-salat-digitor.git/
+cd 2023-4e-salat-digitor
 sh install.sh
 ```
 
