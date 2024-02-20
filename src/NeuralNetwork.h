@@ -18,16 +18,20 @@ public:
 
     std::vector<double> feed(const std::vector<double> &input);
 
-    void train(const std::vector<std::vector<TrainData>> &data, unsigned int iterations, long double learningRate);
+    void train(const std::vector<std::vector<TrainData>> &data, unsigned int iterations,double learningRate);
+
+    void trainSubset(const TrainData& d, std::vector<std::vector<std::vector<std::atomic<double>>>> &newWeights,
+                            std::vector<std::vector<double>> relativeDeltaErrors, std::atomic<double> &cost,
+                            double learningRate);
 
     void saveProgress();
 
 private:
     void feedForward();
 
-    void backPropagate(std::vector<double> target, std::vector<std::vector<long double>> relativeDeltaErrors,
-                       long double learningRate,
-                       std::vector<std::vector<std::vector<long double>>> &newWeights);
+    void backPropagate(std::vector<double> target, std::vector<std::vector<double>> relativeDeltaErrors,
+                       double learningRate,
+                       std::vector<std::vector<std::vector<std::atomic<double>>>> &newWeights);
 
     void initJsonFile();
 
@@ -39,30 +43,32 @@ private:
 
     void setActivationType(int v);
 
-    static long double ReLU(long double v);
+    static double ReLU(double v);
 
-    static long double sigmoid(long double v);
+    static double sigmoid(double v);
 
-    [[nodiscard]] long double activationFn(long double v) const;
+    [[nodiscard]] double activationFn(double v) const;
 
-    [[nodiscard]] long double activationFnDerivative(long double v) const;
+    [[nodiscard]] double activationFnDerivative(double v) const;
 
     int activationType{};
     std::string filename;
-    std::vector<std::vector<long double>> neuron;
-    std::vector<std::vector<long double>> rawNeuron;
-    std::vector<std::vector<long double>> bias;
-    std::vector<std::vector<std::vector<long double>>> weight;
+    std::vector<std::vector<double>> rawNeuron;
+    std::vector<std::vector<double>> neuron;
+    std::vector<std::vector<double>> bias;
+    std::vector<std::vector<std::vector<double>>> weight;
 
 
-    void writeJsonFile(std::vector<std::vector<std::vector<long double>>> &weightToSave,
-                       std::vector<std::vector<long double>> &biasToSave, bool print);
+    void writeJsonFile(std::vector<std::vector<std::vector<double>>> &weightToSave,
+                       std::vector<std::vector<double>> &biasToSave, bool print);
 
     double calculateCost(unsigned int targetValue);
 
-    static long double sigmoidDerivative(long double v);
+    static double sigmoidDerivative(double v);
 
-    static long double ReLUDerivative(long double v);
+    static double ReLUDerivative(double v);
+
+
 };
 
 

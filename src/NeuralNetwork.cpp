@@ -1,15 +1,84 @@
 #include <random>
+#include <utility>
 #include "NeuralNetwork.h"
 #include "string"
 #include "fstream"
 #include "iostream"
 #include "TrainData.h"
 #include "nlohmann/json.hpp"
-
-#include <omp.h>
-#include "mutex"
+#include "atomic"
+#include "vector"
+#include "thread"
+#include "queue"
+#include "condition_variable"
+#include "functional"
 
 using json = nlohmann::json;
+
+struct TrainingTask {
+    NeuralNetwork n;
+    TrainData dataSubset;
+    std::vector<std::vector<std::vector<std::atomic<double>>>> &T_newWeights;
+    std::vector<std::vector<double>> T_relavieDeltaErrors;
+    std::atomic<double> &T_cost;
+    double T_learningRate;
+};
+
+
+class ThreadPool {
+public:
+    explicit ThreadPool(int numThreads) : isRunning(true) {
+        for (int i = 0; i < numThreads; ++i) {
+            workers.emplace_back(&ThreadPool::workerThread, this);
+        }
+    }
+
+    ~ThreadPool() {
+        stop();
+        for (auto &thread: workers) {
+            thread.join();
+        }
+    }
+
+    void addTask(const TrainingTask &task) {
+        std::lock_guard<std::mutex> lock(mutex);
+        tasks.push(task);
+        condition.notify_one();
+    }
+
+    void waitAllTasks() {
+        std::unique_lock<std::mutex> lock(mutex);
+        while (!tasks.empty()) {
+            condition.wait(lock);
+        }
+    }
+
+    void stop() {
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            isRunning = false;
+        }
+        condition.notify_all();
+    }
+
+private:
+    void workerThread() {
+        while (isRunning) {
+            std::unique_lock<std::mutex> lock(mutex);
+            condition.wait(lock, [&] { return !isRunning || !tasks.empty(); });
+            TrainingTask task = std::move(tasks.front());
+            tasks.pop();
+            task.n.trainSubset(task.dataSubset, task.T_newWeights, task.T_relavieDeltaErrors, task.T_cost,
+                               task.T_learningRate);
+        }
+    }
+
+    std::vector<std::thread> workers;
+    std::queue<TrainingTask> tasks;
+    std::mutex mutex;
+    std::condition_variable condition;
+    bool isRunning;
+};
 
 NeuralNetwork::NeuralNetwork(const std::vector<unsigned int> &neuronsPerLayer, const char *activationFn = "sigmoid") {
     if (strcmp(activationFn, "sigmoid") == 0) setActivationType(0);
@@ -83,7 +152,7 @@ std::vector<double> NeuralNetwork::feed(const std::vector<double> &input) {
     }
     feedForward();
     std::vector<double> result;
-    for (long double i: neuron[neuron.size() - 1]) {
+    for (double i: neuron[neuron.size() - 1]) {
         result.push_back((double) i);
     }
     return result;
@@ -106,43 +175,65 @@ void NeuralNetwork::feedForward() {
     }
 }
 
+void
+NeuralNetwork::trainSubset(const TrainData &d,
+                           std::vector<std::vector<std::vector<std::atomic<double>>>> &newWeights,
+                           std::vector<std::vector<double>> relativeDeltaErrors,
+                           std::atomic<double> &cost, double learningRate) {
+    if (d.image.size() != neuron[0].size()) {
+        std::cerr << "Wrong input format" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    for (int j = 0; j < d.image.size(); ++j) {
+        neuron[0][j] = d.image[j];
+    }
+    feedForward();
+    cost.fetch_add(calculateCost(d.value));
+    std::vector<double> target;
+    target.resize(layers[layers.size() - 1]);
+    for (int j = 0; j < target.size(); ++j) {
+        if (j == d.value) target[j] = 1;
+        else target[j] = 0;
+    }
+    backPropagate(target, std::move(relativeDeltaErrors), learningRate, newWeights);
+}
+
 void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsigned int iterations,
-                          long double learningRate) {
-    std::vector<std::vector<std::vector<long double>>>
-            minCostWeights;
-    std::vector<std::vector<std::vector<long double>>> newWeights;
-    std::vector<std::vector<long double>> relativeDeltaErrors;
+                          double learningRate) {
+    std::vector<std::vector<std::vector<double>>> minCostWeights;
+    std::vector<std::vector<std::vector<std::atomic<double>>>> newWeights;
+    std::vector<std::vector<double>> relativeDeltaErrors;
     relativeDeltaErrors.resize(layers.size());
     for (int j = 0; j < layers.size(); ++j) {
         relativeDeltaErrors[j].resize(layers[j], 0);
     }
     double minCost = -1;
+    ThreadPool pool(6);
     for (int i = 0; i < iterations; ++i) {
-        double cost = 0;
-        newWeights = weight;
+        std::atomic<double> cost = 0;
+        for (int l = 0; l < weight.size(); ++l) {
+            for (int n = 0; n < weight[l].size(); ++n) {
+                for (int w = 0; w < weight[l][n].size(); ++w) {
+                    newWeights[l][n][w].store(weight[l][n][w]);
+                }
+            }
+        }
         for (auto &set: data) {
             for (const auto &d: set) {
-                if (d.image.size() != neuron[0].size()) {
-                    std::cerr << "Wrong input format" << std::endl;
-                    exit(EXIT_FAILURE);
-                }
-                for (int j = 0; j < d.image.size(); ++j) {
-                    neuron[0][j] = d.image[j];
-                }
-                feedForward();
-                cost += calculateCost(d.value);
-                std::vector<double> target;
-                target.resize(layers[layers.size() - 1]);
-                for (int j = 0; j < target.size(); ++j) {
-                    if (j == d.value) target[j] = 1;
-                    else target[j] = 0;
-                }
-                backPropagate(target, relativeDeltaErrors, learningRate, newWeights);
+                TrainingTask t = {*this, d, newWeights, relativeDeltaErrors, cost, learningRate};
+                pool.addTask(t);
             }
-            weight = newWeights;
+            pool.waitAllTasks();
+            for (int l = 0; l < weight.size(); ++l) {
+                for (int n = 0; n < weight[l].size(); ++n) {
+                    for (int w = 0; w < weight[l][n].size(); ++w) {
+                        weight[l][n][w] = newWeights[l][n][w].load();
+                    }
+                }
+            }
         }
         double progress = (double) i * 100 / iterations;
-        double totalCost = cost / ((double) data.size() * (double) data[0].size());
+        double totalCost = cost.load() / ((double) data.size() * (double) data[0].size());
         if (totalCost < minCost || minCost == -1) {
             minCost = totalCost;
             minCostWeights = weight;
@@ -154,10 +245,11 @@ void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsig
     updateJsonFile();
 }
 
+
 void NeuralNetwork::backPropagate(std::vector<double> target,
-                                  std::vector<std::vector<long double>> relativeDeltaErrors,
-                                  long double learningRate,
-                                  std::vector<std::vector<std::vector<long double>>> &newWeights) {
+                                  std::vector<std::vector<double>> relativeDeltaErrors,
+                                  double learningRate,
+                                  std::vector<std::vector<std::vector<std::atomic<double>>>> &newWeights) {
     unsigned int lastLayerIndex = weight.size() - 1;
     unsigned int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
     /**
@@ -171,14 +263,14 @@ void NeuralNetwork::backPropagate(std::vector<double> target,
      *
      */
     for (int i = 0; i < weight[lastLayerIndex].size(); ++i) {
-        long double output = neuron[lastLayerNeuronsIndex][i];
+        double output = neuron[lastLayerNeuronsIndex][i];
         relativeDeltaErrors[lastLayerNeuronsIndex][i] = 2 * (output - target[i]);
         for (int j = 0; j < weight[lastLayerIndex][i].size(); ++j) {
-            long double source = neuron[lastLayerNeuronsIndex - 1][j];
-            long double rawSource = rawNeuron[lastLayerNeuronsIndex - 1][j];
-            long double localError =
+            double source = neuron[lastLayerNeuronsIndex - 1][j];
+            double rawSource = rawNeuron[lastLayerNeuronsIndex - 1][j];
+            double localError =
                     relativeDeltaErrors[lastLayerNeuronsIndex][i] * activationFnDerivative(rawSource) * source;
-            newWeights[lastLayerIndex][i][j] -= learningRate * localError;
+            newWeights[lastLayerIndex][i][j].fetch_add(-learningRate * localError);
         }
     }
 
@@ -193,16 +285,16 @@ void NeuralNetwork::backPropagate(std::vector<double> target,
      */
     for (int i = (int) (lastLayerIndex - 1); i >= 0; --i) {
         for (int j = 0; j < weight[i].size(); ++j) {
-            long double subtotal = 0;
+            double subtotal = 0;
             for (int l = 0; l < relativeDeltaErrors[i + 2].size(); ++l) {
                 subtotal += relativeDeltaErrors[i + 2][l] * activationFnDerivative(rawNeuron[i + 1][j]) *
                             weight[i + 1][l][j];
             }
             relativeDeltaErrors[i + 1][j] = subtotal;
             for (int k = 0; k < weight[i][j].size(); ++k) {
-                long double localError =
+                double localError =
                         activationFnDerivative(rawNeuron[i + 1][j]) * neuron[i][k] * relativeDeltaErrors[i + 1][j];
-                newWeights[i][j][k] -= learningRate * localError;
+                newWeights[i][j][k].fetch_add(-learningRate * localError);
             }
         }
     }
@@ -220,15 +312,15 @@ double NeuralNetwork::calculateCost(unsigned int targetValue) {
     return cost;
 }
 
-long double NeuralNetwork::ReLU(long double v) {
+double NeuralNetwork::ReLU(double v) {
     return v > 0 ? v : 0;
 }
 
-long double NeuralNetwork::ReLUDerivative(long double v) {
+double NeuralNetwork::ReLUDerivative(double v) {
     return v > 0 ? 1 : 0;
 }
 
-long double NeuralNetwork::sigmoid(long double v) {
+double NeuralNetwork::sigmoid(double v) {
     if (v >= 650) {
         return 1.0;
     } else if (v <= -650) {
@@ -237,14 +329,13 @@ long double NeuralNetwork::sigmoid(long double v) {
     return (1.0 / (1.0 + exp(-(double) v)));
 }
 
-long double NeuralNetwork::sigmoidDerivative(long double v) {
-    long double sig = sigmoid(v);
-    long double result = sig * (1.0 - sig);
+double NeuralNetwork::sigmoidDerivative(double v) {
+    double sig = sigmoid(v);
+    double result = sig * (1.0 - sig);
     return result;
 }
 
-
-long double NeuralNetwork::activationFn(long double v) const {
+double NeuralNetwork::activationFn(double v) const {
     switch (activationType) {
         case 0:
             return sigmoid(v);
@@ -260,7 +351,7 @@ void NeuralNetwork::setActivationType(int v) {
     this->activationType = v;
 }
 
-long double NeuralNetwork::activationFnDerivative(long double v) const {
+double NeuralNetwork::activationFnDerivative(double v) const {
     switch (activationType) {
         case 0:
             return sigmoidDerivative(v);
@@ -275,7 +366,7 @@ long double NeuralNetwork::activationFnDerivative(long double v) const {
 void NeuralNetwork::initRandom() {
     for (auto &i: weight) {
         for (auto &j: i) {
-            for (long double &k: j) {
+            for (double &k: j) {
                 std::random_device rd;
                 std::mt19937 gen(rd());
                 std::uniform_real_distribution<> dis(-2.0, 2.0);
@@ -284,7 +375,7 @@ void NeuralNetwork::initRandom() {
         }
     }
     for (auto &bia: bias) {
-        for (long double &j: bia) {
+        for (double &j: bia) {
             /*std::random_device rd;
             std::mt19937 gen(rd());
             std::uniform_real_distribution<> dis(-1.0, 1.0);
@@ -292,11 +383,10 @@ void NeuralNetwork::initRandom() {
             j = 0;
         }
     }
-    for (long double &i: bias[bias.size() - 1]) {
+    for (double &i: bias[bias.size() - 1]) {
         i = 0;
     }
 }
-
 
 void NeuralNetwork::initJsonFile() {
     std::string file;
@@ -312,19 +402,16 @@ void NeuralNetwork::initJsonFile() {
     writeJsonFile(weight, bias, true);
 }
 
-
 void NeuralNetwork::saveProgress() {
     writeJsonFile(weight, bias, false);
 }
-
 
 void NeuralNetwork::updateJsonFile() {
     writeJsonFile(weight, bias, true);
 }
 
-
-void NeuralNetwork::writeJsonFile(std::vector<std::vector<std::vector<long double>>> &weightToSave,
-                                  std::vector<std::vector<long double>> &biasToSave, bool print) {
+void NeuralNetwork::writeJsonFile(std::vector<std::vector<std::vector<double>>> &weightToSave,
+                                  std::vector<std::vector<double>> &biasToSave, bool print) {
     std::ofstream output_file(filename);
     if (output_file.is_open()) {
         json data;
@@ -341,7 +428,6 @@ void NeuralNetwork::writeJsonFile(std::vector<std::vector<std::vector<long doubl
     }
 }
 
-
 nlohmann::json NeuralNetwork::readJsonFile() {
     std::ifstream jFile(filename);
     if (!jFile.is_open()) {
@@ -353,12 +439,11 @@ nlohmann::json NeuralNetwork::readJsonFile() {
     return json::parse(jsonString);
 }
 
-
 std::string NeuralNetwork::toString() {
     std::string result;
     result += "neurons: \n";
     for (auto &i: neuron) {
-        for (long double j: i) {
+        for (double j: i) {
             result += std::to_string(j);
             result += " ";
         }
@@ -367,7 +452,7 @@ std::string NeuralNetwork::toString() {
     result += "weights: \n";
     for (auto &i: weight) {
         for (auto &j: i) {
-            for (long double k: j) {
+            for (double k: j) {
                 result += std::to_string(k);
                 result += " ";
             }
