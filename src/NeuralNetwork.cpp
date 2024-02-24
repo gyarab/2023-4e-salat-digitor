@@ -108,9 +108,9 @@ void NeuralNetwork::feedForward() {
 
 void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsigned int iterations,
                           long double learningRate) {
-    std::vector<std::vector<std::vector<long double>>>
-            minCostWeights;
+    std::vector<std::vector<std::vector<long double>>> minCostWeights;
     std::vector<std::vector<std::vector<long double>>> newWeights;
+    std::vector<std::vector<long double>> newBiases;
     std::vector<std::vector<long double>> relativeDeltaErrors;
     relativeDeltaErrors.resize(layers.size());
     for (int j = 0; j < layers.size(); ++j) {
@@ -120,6 +120,7 @@ void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsig
     for (int i = 0; i < iterations; ++i) {
         double cost = 0;
         newWeights = weight;
+        newBiases = neuron;
         for (auto &set: data) {
             for (const auto &d: set) {
                 if (d.image.size() != neuron[0].size()) {
@@ -137,7 +138,7 @@ void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsig
                     if (j == d.value) target[j] = 1;
                     else target[j] = 0;
                 }
-                backPropagate(target, relativeDeltaErrors, learningRate, newWeights);
+                backPropagate(target, relativeDeltaErrors, learningRate, newWeights, newBiases);
             }
             weight = newWeights;
         }
@@ -157,7 +158,8 @@ void NeuralNetwork::train(const std::vector<std::vector<TrainData>> &data, unsig
 void NeuralNetwork::backPropagate(std::vector<double> target,
                                   std::vector<std::vector<long double>> relativeDeltaErrors,
                                   long double learningRate,
-                                  std::vector<std::vector<std::vector<long double>>> &newWeights) {
+                                  std::vector<std::vector<std::vector<long double>>> &newWeights,
+                                  std::vector<std::vector<long double>> &newBiases) {
     unsigned int lastLayerIndex = weight.size() - 1;
     unsigned int lastLayerNeuronsIndex = (neuron.size() - 1) - ((weight.size() - 1) - lastLayerIndex);
     /**
@@ -176,9 +178,9 @@ void NeuralNetwork::backPropagate(std::vector<double> target,
         for (int j = 0; j < weight[lastLayerIndex][i].size(); ++j) {
             long double source = neuron[lastLayerNeuronsIndex - 1][j];
             long double rawSource = rawNeuron[lastLayerNeuronsIndex - 1][j];
-            long double localError =
-                    relativeDeltaErrors[lastLayerNeuronsIndex][i] * activationFnDerivative(rawSource) * source;
-            newWeights[lastLayerIndex][i][j] -= learningRate * localError;
+            long double localError = relativeDeltaErrors[lastLayerNeuronsIndex][i] * activationFnDerivative(rawSource);
+            newWeights[lastLayerIndex][i][j] -= learningRate * localError * source;
+            newBiases[lastLayerIndex][j] -= learningRate * localError;
         }
     }
 
@@ -199,10 +201,10 @@ void NeuralNetwork::backPropagate(std::vector<double> target,
                             weight[i + 1][l][j];
             }
             relativeDeltaErrors[i + 1][j] = subtotal;
+            long double localError = activationFnDerivative(rawNeuron[i + 1][j]) * relativeDeltaErrors[i + 1][j];
+            newBiases[i + 1][j] -= learningRate * localError;
             for (int k = 0; k < weight[i][j].size(); ++k) {
-                long double localError =
-                        activationFnDerivative(rawNeuron[i + 1][j]) * neuron[i][k] * relativeDeltaErrors[i + 1][j];
-                newWeights[i][j][k] -= learningRate * localError;
+                newWeights[i][j][k] -= learningRate * localError * neuron[i][k];
             }
         }
     }
@@ -278,18 +280,17 @@ void NeuralNetwork::initRandom() {
             for (long double &k: j) {
                 std::random_device rd;
                 std::mt19937 gen(rd());
-                std::uniform_real_distribution<> dis(-2.0, 2.0);
+                std::uniform_real_distribution<> dis(-1.0, 1.0);
                 k = dis(gen);
             }
         }
     }
     for (auto &bia: bias) {
         for (long double &j: bia) {
-            /*std::random_device rd;
+            std::random_device rd;
             std::mt19937 gen(rd());
-            std::uniform_real_distribution<> dis(-1.0, 1.0);
-            j = dis(gen);*/
-            j = 0;
+            std::uniform_real_distribution<> dis(-0.1, 0.1);
+            j = dis(gen);
         }
     }
     for (long double &i: bias[bias.size() - 1]) {
