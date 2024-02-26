@@ -21,7 +21,7 @@ def test_all(filename):
             if output != f"{j}":
                 wrongs[j] += 1
                 count += 1
-    print(f"{count}/80000 wrong ({count/800}% correct)")
+    print(f"{count}/80000 wrong ({round(100 - count / 800, 1)}% correct)")
     print(wrongs)
     print()
 
@@ -40,7 +40,7 @@ def test_all(filename):
             if output != f"{j}":
                 wrongs[j] += 1
                 count += 1
-    print(f"{count}/27730 wrong ({count/277.3}% correct)")
+    print(f"{count}/27730 wrong ({round(100 - count / 277.3, 1)}% correct)")
     print(wrongs)
 
 
