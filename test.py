@@ -42,6 +42,26 @@ def test_all(filename):
                 count += 1
     print(f"{count}/27730 wrong ({round(100 - count / 277.3, 1)}% correct)")
     print(wrongs)
+    print()
+
+    count = 0
+    wrongs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    print(f"# Testing on firu dataset")
+    for i in range(0, 1):
+        for j in range(0, 10):
+            image_link = ["nula", "jedna", "dva", "tri", "ctyri", "pet", "sest", "sedm", "osm", "devet"]
+            image = Image.open(f'cisla/{image_link[j]}.png').convert("LA")
+            pixels = ""
+            for pixel in image.getdata():
+                pixels += str(pixel[1]) + " "
+            process.stdin.write(f"{pixels}\n")
+            process.stdin.flush()
+            output = process.stdout.readline().strip()
+            if output != f"{j}":
+                wrongs[j] += 1
+                count += 1
+    print(f"{count}/10 wrong ({round(100 - count / 1, 1)}% correct)")
+    print(wrongs)
 
 
 def main(filename):
