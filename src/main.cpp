@@ -152,10 +152,11 @@ int main(int argc, char *argv[]) {
                 cin >> input[i];
             }
             vector<double> output = n->feed(input);
-            printVector(output);
+            //printVector(output);
             unsigned int estimation = max_element(output.begin(), output.end()) - output.begin();
-            cout << estimation << " -> " << std::fixed << std::setprecision(2) << output[estimation] * 100 << "%"
-                 << endl;
+            /*cout << estimation << " -> " << std::fixed << std::setprecision(2) << output[estimation] * 100 << "%"
+                 << endl;*/
+            cout << estimation << endl;
         }
     }
     return 0;
