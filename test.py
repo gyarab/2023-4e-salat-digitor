@@ -6,67 +6,26 @@ import sys
 def test_all(filename):
     process = subprocess.Popen(["./digitor", f"{filename}"],
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-    count = 0
-    wrongs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    print(f"# Testing on training dataset")
-    for i in range(0, 8000):
-        for j in range(0, 10):
-            image = Image.open(f'train/{j}/{j}\\{i}.png').convert("LA")
-            pixels = ""
-            for pixel in image.getdata():
-                pixels += str(pixel[1]) + " "
-            process.stdin.write(f"{pixels}\n")
-            process.stdin.flush()
-            output = process.stdout.readline().strip()
-            if output != f"{j}":
-                wrongs[j] += 1
-                count += 1
-    print(f"{count}/80000 wrong ({round(100 - count / 800, 1)}% correct)")
-    print(wrongs)
-    print()
-
-    count = 0
-    wrongs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    print(f"# Testing on testing dataset")
-    for i in range(0, 2773):
-        for j in range(0, 10):
-            image = Image.open(f'test/{j}/{j}\\{i}.png').convert("LA")
-            pixels = ""
-            for pixel in image.getdata():
-                pixels += str(pixel[1]) + " "
-            process.stdin.write(f"{pixels}\n")
-            process.stdin.flush()
-            output = process.stdout.readline().strip()
-            if output != f"{j}":
-                wrongs[j] += 1
-                count += 1
-    print(f"{count}/27730 wrong ({round(100 - count / 277.3, 1)}% correct)")
-    print(wrongs)
-    print()
-
-    count = 0
-    wrongs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    print(f"# Testing on firu dataset")
-    for i in range(0, 1):
-        for j in range(0, 10):
-            image_link = ["nula", "jedna", "dva", "tri", "ctyri", "pet", "sest", "sedm", "osm", "devet"]
-            image = Image.open(f'cisla/{image_link[j]}.png').convert("LA")
-            pixels = ""
-            for pixel in image.getdata():
-                pixels += str(pixel[1]) + " "
-            process.stdin.write(f"{pixels}\n")
-            process.stdin.flush()
-            output = process.stdout.readline().strip()
-            if output != f"{j}":
-                wrongs[j] += 1
-                count += 1
-    print(f"{count}/10 wrong ({round(100 - count / 1, 1)}% correct)")
-    print(wrongs)
+    for dataset_path, size in [("data/train/", 80000), ("data/test/", 27730)]:
+        print(f"# Testing \'{dataset_path}\' dataset")
+        count = 0
+        wrongs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for i in range(0, size // 10):
+            for j in range(0, 10):
+                image = Image.open(f"{dataset_path}{j}/{j}\\{i}.png").convert("LA")
+                pixels = ""
+                for pixel in image.getdata():
+                    pixels += str(pixel[1]) + " "
+                process.stdin.write(f"{pixels}\n")
+                process.stdin.flush()
+                output = process.stdout.readline().strip()
+                if output != f"{j}":
+                    wrongs[j] += 1
+                    count += 1
+        print(f"{count}/{size} wrong ({round(100 - (count / (size / 100)), 1)}% correct)")
+        print(wrongs)
+        print()
 
 
-def main(filename):
-    test_all(filename)
-
-
-if __name__ == '__main__':
-    main(sys.argv[1])
+if __name__ == "__main__":
+    test_all(sys.argv[1])
