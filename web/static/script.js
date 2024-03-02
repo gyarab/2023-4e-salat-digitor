@@ -1,40 +1,31 @@
 const canvas = document.getElementById("myCanvas");
 const result = document.getElementById("result");
 const ctx = canvas.getContext("2d");
+ctx.lineWidth = 25;
 
 let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
-
-function drawLine(x, y) {
-    ctx.lineWidth = 15;
-    ctx.strokeStyle = "rgba(0, 0, 0, 15)";
-    ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    ctx.strokeStyle = "black";
-    ctx.beginPath();
-    ctx.moveTo(lastX + 8, lastY + 8);
-    ctx.lineTo(x + 8, y + 8);
-    ctx.stroke();
-    lastX = x;
-    lastY = y;
-}
+let x = 0;
+let y = 0;
 
 canvas.addEventListener("mousedown", (e) => {
     isDrawing = true;
-    lastX = e.offsetX;
-    lastY = e.offsetY;
+    x = Math.floor(e.offsetX);
+    y = Math.floor(e.offsetY);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
 });
 
 canvas.addEventListener("mouseup", () => {
     isDrawing = false;
+    ctx.closePath();
 });
 
 canvas.addEventListener("mousemove", (e) => {
     if (isDrawing) {
-        drawLine(e.offsetX, e.offsetY);
+        x = Math.floor(e.offsetX);
+        y = Math.floor(e.offsetY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
     }
 });
 
