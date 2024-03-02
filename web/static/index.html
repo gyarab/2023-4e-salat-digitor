@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Variable Opacity Drawing</title>
+    <style>
+        body {
+            margin: 1vh;
+            padding: 1vh;
+            display: flex; /* Make the body a flex container */
+            justify-content: center; /* Center content horizontally */
+            /*align-items: center; /* Center content vertically */
+            height: 100vh;
+        }
+
+        .main {
+            text-align: center; /* Center text within the main element */
+        }
+
+        canvas {
+            width: 280px;
+            height: 280px;
+            border: 1px solid black;
+        }
+
+        #send-btn {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <h1>Digitor</h1>
+    <canvas id="myCanvas" width="280" height="280"></canvas>
+    <br/>
+    <button id="send-btn">Evaluate</button>
+    <h3 id="result"></h3>
+    <script src="script.js"></script>
+</div>
+</body>
+</html>
