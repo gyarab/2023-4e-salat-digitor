@@ -20,22 +20,22 @@
     citestyle=numeric,
     autocite=superscript,
     sorting=none
-    ]{biblatex}
+]{biblatex}
 % \usepackage{biblatex}
 \addbibresource{literature.bib}
 
 \DeclareCiteCommand{\supercite}[\mkbibsuperscript]
-  {\iffieldundef{prenote}
-     {}
-     {\BibliographyWarning{Ignoring prenote argument}}%
-   \iffieldundef{postnote}
-     {}
-     {\BibliographyWarning{Ignoring postnote argument}}%
-   \bibopenbracket}%
-  {\usebibmacro{citeindex}%
-   \usebibmacro{cite}}
-  {\supercitedelim}
-  {\bibclosebracket}
+{\iffieldundef{prenote}
+{}
+{\BibliographyWarning{Ignoring prenote argument}}%
+\iffieldundef{postnote}
+{}
+{\BibliographyWarning{Ignoring postnote argument}}%
+\bibopenbracket}%
+{\usebibmacro{citeindex}%
+\usebibmacro{cite}}
+{\supercitedelim}
+{\bibclosebracket}
 
 % definování listings pro vklad kódu
 % \usepackage{listings}
@@ -47,12 +47,12 @@
 \makeatletter
 \renewenvironment{abstract}{%
     \if@twocolumn
-      \section*{\abstractname}%
+    \section*{\abstractname}%
     \else %% <- here I've removed \small
-      \begin{center}%
-        {\bfseries \Large\abstractname\vspace{\z@}}%  %% <- here I've added \Large
-      \end{center}%
-      \quotation
+    \begin{center}%
+    {\bfseries \Large\abstractname\vspace{\z@}}%  %% <- here I've added \Large
+    \end{center}%
+    \quotation
     \fi}
     {\if@twocolumn\else\endquotation\fi}
 \makeatother
@@ -62,12 +62,12 @@
 
 \begin{document}
 
-\include{titulnistrany}  % povinné strany
+    \include{titulnistrany}  % povinné strany
 
-\input{sections/uvod}
+    \input{sections/uvod}
 
-\newpage
-\printbibliography
-\listoffigures
+    \newpage
+    \printbibliography
+    \listoffigures
 
 \end{document}
