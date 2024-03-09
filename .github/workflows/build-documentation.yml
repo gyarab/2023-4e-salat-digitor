@@ -1,0 +1,56 @@
+name: Build documentation
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  compile-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # setup tectonic with installation caching
+    - uses: actions/cache@v3
+      name: Tectonic Cache
+      with:
+        path: ~/.cache/Tectonic
+        key: ${{ runner.os }}-tectonic-${{ hashFiles('**/*.tex') }}
+        restore-keys: |
+          ${{ runner.os }}-tectonic-
+    - uses: wtfjoke/setup-tectonic@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        # biblatex and biber need to match here: https://ctan.fisiquimicamente.com/macros/latex/contrib/biblatex/doc/biblatex.pdf
+        tectonic-version: 0.12.0
+        biber-version: 2.17
+
+    - name: Compile documentation
+      run: "tectonic docs/main.tex && mkdir -p build && cp docs/main.pdf build/main.pdf"
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        # Upload docs only
+        path: './build'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
