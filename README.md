@@ -1,6 +1,9 @@
-# Digitor
+# Digitor [<i><a href="https://gyarab.github.io/2023-4e-salat-digitor/main.pdf">Online PDF dokumentace</a></i>]
 
-Digitor je neuronová síť.
+Tento projekt slouží k vytváření a trénování jednoduchých (plně propojených) neuronových sítí. Konkrétní
+model `digitor.json`
+byl natrénován pro klasifikaci rukou napsaných cifer.
+Tento model slouží především jako demonstrace, že program je schopen vytvářet a úspěšně natrénovat různé modely.
 
 ## Instalace
 
