@@ -227,7 +227,7 @@ long double NeuralNetwork::ReLU(long double v) {
 }
 
 long double NeuralNetwork::ReLUDerivative(long double v) {
-    return v > 0 ? 1 : 0;
+    return v >= 0 ? 1 : 0;
 }
 
 long double NeuralNetwork::sigmoid(long double v) {
