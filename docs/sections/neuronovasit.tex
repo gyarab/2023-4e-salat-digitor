@@ -37,7 +37,14 @@ Až hodnoty projdou celou sítí nakonec, ve výstupní vrstvě je výsledek.
 Hodnota konkrétního neuronu se spočítá z jeho vstupů. Každý neuron, až na vstupní vrstvu, má vstupní neurony.
 Jeho hodnota se vypočíta ta, že se sečte hodnota všech jeho vstupních neuronů vynásobena spojujícími vahami každého neuronu.
 Dále se přičte bias daného neuronu, který slouží jako práh aktivace. Nakonec se použije aktivační funkce.
-Aktivačních funkcí je řada. Mezi nejběžnější patří například sigmoid (\[\frac{1}{1 + e^-x}\]) nebo ReLU (\[max(0,x)\]). Výběr ideální aktivační funkce opět zavisí na problému, který má síť řešit.
+Aktivačních funkcí je řada.
+Mezi nejběžnější patří:
+\begin{itemize}
+    \item Sigmoid \[\sigma(x) = \frac{1}{1 + e^{-x}}\]
+    \item ReLU \[ReLU = max(0, x)\]
+    \item Tanh \[tanh(x) = \frac{e^{2x} - 1}{e^{2x} + 1}\]
+\end{itemize}
+Výběr ideální aktivační funkce opět zavisí na problému, který má síť řešit.
 Tyto funkce v jednoduchosti transformují vstupy neuronu na jeho výstupy.
 Aktivační funkce dodávají sítím jistou nelinearitu, která umožňuje sítím řešit i problémy, které nejsou linearní.
 
