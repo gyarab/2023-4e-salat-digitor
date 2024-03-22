@@ -40,9 +40,9 @@ Dále se přičte bias daného neuronu, který slouží jako práh aktivace. Nak
 Aktivačních funkcí je řada.
 Mezi nejběžnější patří:
 \begin{itemize}
-    \item Sigmoid \[\sigma(x) = \frac{1}{1 + e^{-x}}\]
-    \item ReLU \[ReLU = max(0, x)\]
-    \item Tanh \[tanh(x) = \frac{e^{2x} - 1}{e^{2x} + 1}\]
+    \item \[Sigmoid \sigma(x) = \frac{1}{1 + e^{-x}}\]
+    \item \[ReLU ReLU(x) = max(0, x)\]
+    \item \[Tanh tanh(x) = \frac{e^{2x} - 1}{e^{2x} + 1}\]
 \end{itemize}
 Výběr ideální aktivační funkce opět zavisí na problému, který má síť řešit.
 Tyto funkce v jednoduchosti transformují vstupy neuronu na jeho výstupy.
@@ -53,7 +53,3 @@ Aktivační funkce dodávají sítím jistou nelinearitu, která umožňuje sít
     \includegraphics[width=0.75\textwidth]{images/neuron.jpg}
     \caption{Umělý neuron}\cite{umely_neuron}
 \end{figure}
-
-\subsection{Implementace v programu}
-
-
