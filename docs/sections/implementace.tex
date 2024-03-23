@@ -39,25 +39,26 @@ Možné použití jsou:
 \begin{itemize}
     \item Načte neuronovou síť ze souboru a čeká na standartním vstupu data na zpracování.
     \begin{lstlisting}[language=bash]
-    $ ./digitor <jmeno_souboru>
+$ ./digitor <jmeno_souboru>
     \end{lstlisting}
 
     \item Vytvoří neuronovou síť podle zadaných parametrů.
     Formát pro zadání neuronů je vždy počet neuronů pro každou vrstvu, který je oddělen čárkou.
     Př. "10,2,2,10", tato síť by měla čtyři vrstvy z čehož vstupní i výstupní by měla 10 neuronů a obě skryté by měly 2 neurony.
     \begin{lstlisting}[language=bash]
-    $ ./digitor -n <neurony> <aktivace>
+$ ./digitor -n <neurony> <aktivace>
     \end{lstlisting}
 
     \item Trénování exitující sítě. Program dostane informace o počtu učících dat, počtu iterací a míře učení.
     Dále program čeká na standartní vstup zmiňované učící data a následovně síť trénuje.
     \begin{lstlisting}[language=bash]
-    $ ./digitor -t <jmeno_soubor> <pocet_iteraci> <rychlost_uceni> <pocet_davek> <pocet_dat>
+$ ./digitor -t <jmeno_soubor> <pocet_iteraci> <rychlost_uceni>
+    <pocet_davek> <pocet_dat>
     \end{lstlisting}
 
     \item Vytvoří novou neuronovou síť podle požadavků a síť natrénuje stejným způsobem jako v předešlém bodě.
     \begin{lstlisting}[language=bash]
-    $ ./digitor -t -n <neurony> <iterace> <rychlost_uceni> <aktivace>
+$ ./digitor -t -n <neurony> <iterace> <rychlost_uceni> <aktivace>
     <počet_dávek> <počet_dat>
     \end{lstlisting}
 \end{itemize}
