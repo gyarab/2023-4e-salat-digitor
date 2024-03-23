@@ -5,7 +5,29 @@ Program je schopen na požadavek buď, vytvořit novou síť podle vstupních pa
 S takto vytvořenou neuronovou sítí je program dále schopen pracovat dvěma způsoby.
 Neuronovou síť může trénovat nebo jí jen načte a čeká na vstupní data, která neuronová síť zpracuje a vrátí výsledek.
 
-\subsection{Vytváření a načítaní neuronové sítě}
+\subsection{Vytváření a načítání neuronové sítě}
+Neuronová síť je v programu reprezentována vícerozměrnými poli. První dvojrozměrné pole reprezentuje neurony.
+
+Pole `neuron` má dva rozměry tzn. pole v poli.
+První (nulté) pole v `neuron` reprezentuje první vrstvu neuronů (vstupní) vrstvu.
+Naopak poslední prvek pole `neuron` reprezentuje poslední (výstupní) vrstvu.
+Počet skrytých vrstev v neuronové síti se tedy rovná `neuron.size()-2`.
+Každé toto pole uložené v `neuron` obsahuje `n` hodnot, které reprezentují hodnoty konkrétních neuronů. Hodnoty jsou typu long double.
+
+Další pole `bias` má také dva rozměry a jeho velikost je identická jako velikost pole `neuron`.
+Hodnoty v jednotlivých polích reprezentují hodnotu biasu konkrétního neuronu. Hodnoty jsou také typu long double.
+
+Poslední pole reprezentující samotnou neuronovou síť je trojrozměrné pole `weight`. Velikost pole je rovno počtu vrstev mínus jedna.
+První (nultý) prvek tj. `weight[0]` reprezentuje dvojrozměrné pole, které reprezentuje váhy spojující vstupní neuroný s neurony druhé vrstvy.
+Pole `weight[0][0]` je pole hodnot jednotlivých vah, které míří do prvních (nultého) neuronu druhé vrstvy. Váhy jsou také typu long double.
+
+Při vytváření nové neuronové sítě se v konstruktoru vytvoří zmiňovaná pole o velikostech, které odpovídají zadaným parametrům.
+Hodnoty vah a biasů se incializují s náhodnou hodnotou. Dále se celá neuronová síť serializuje do souboru JSON, který se následně uloží.
+V názvu souboru je obsažen počet vrstev sítě navíc s náhodným číslem, které se pokusí zabránit kolizi na disku. Soubor obsahuje všechny potrebné data pro pozdější načtení neuronové sítě.
+To znamená velikost, aktivační funkce neuronů, hodnoty vah a hodnoty biasů.
+
+Pokud program pouze načítá neuronovou síť z již existujícího souboru, konstruktor pouze očekává název souboru.
+Dále konstruktor deserializuje data ze souboru a uloží si je do proměnných.
 
 \subsection{Trénování neuronové sítě}
 
