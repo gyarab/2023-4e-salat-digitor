@@ -32,3 +32,14 @@ Dále konstruktor deserializuje data ze souboru a uloží si je do proměnných.
 \subsection{Trénování neuronové sítě}
 
 \subsection{Spouštění programu}
+Při spouštění si pomocí přepínačů lze nastavid, zda chceme například vytvářet úplně novou neuronovou síť, nebo chceme načíst již exístující síť.
+Dále je možné specifikovat jestli chceme síť trénovat nebo ji chceme použít k zpracování dat.
+
+Možné použití jsou:
+\begin{itemize}
+    \item \begin{lstlisting}[language=bash]
+              $ ./digitor <jméno_souboru>
+    \end{lstlisting} Načte neuronovou síť ze souboru a čeká na standartním vstupu data na zpracování.
+    \item skryté vrstvy - tyto vrstvy transofrmují data a napomáhají řešit komplexní úlohy
+    \item výstupní vrstva - vrací výsledky zpracování dat
+\end{itemize}
