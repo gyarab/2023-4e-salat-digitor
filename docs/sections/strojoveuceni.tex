@@ -1,1 +1,21 @@
 \section{Strojové učení}
+Strojové učení je nedílnou součástí celé kapitoly neuronových sítí. Strojové učení se umožňuje sítím se učit ze známých dat.
+Díky strojovému učení je možné řešit problémy, které byly do objevení těchto učících technik neřešitelné.
+Existuje několik způsobů učení, ale v této práci bylo použito takzvané učení s učitelem.
+To znamená, že všechny data, ze kterých se síť učí jsou předkládána síti se správným výsledkem.
+Existují však metody bez učitele, které se dokáží učit i z nepopsaných dat.
+
+Princip storjového učení je,že síť dostane data se správnými výsledky a síť si na základě těchto dat poupraví svoje hodnoty vah a biasů tak,
+aby při načtení těchto dat odpověděla příště správně.
+
+\subsection{Zpětné počítání chyby}
+Zpětné počítání chyby, neboli backpropagation, je algoritmus pro hluboké učení neuronových sítí.
+Tento algoritmus funguje tak, že se šíří chyba výstupu zpátky do neuronové sítě a podle chyby upravuje postupně váhy a biasy.
+
+Tento algoritmus se skládá ze 4 kroků. Nejprve se musí vyhodnotit chyba. To znamená, že se konkrétní dat nechají vyhodnotit sítí a spočítá se chyba.
+Chyba je v tomto případě rozdíl od očekávaného výsledku. Dále se chyba šíří zpět do sítě a počítá se derivace chyby vzhledem ke konkrétním vahám a biasům.
+Na základě této derivace se váhy a biasy aktualizují. Tato aktualizace pomáhá zmírňovat celkovou chybu výsledku. Nakonec se tento proces pro všechny trénovací data opakuje.
+
+\subsection{Počítání chyby a aktualizace vah a biasů}
+Celková chyba sítě se označuje velkým písmenem \(C\). Při zpětné úpravě vah a biasů nás zajímá jaká je derivace chyby vůči každé váze \(\frac{\delta C}{\delta w}\) a biasu \(\frac{\delta C}{\delta b}\).
+V moment, kdy budeme znát tento vztah, tak víme jakým směrem upravit váhu nebo bias, abychom snížili celkovou chybu sítě.
