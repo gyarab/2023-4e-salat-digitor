@@ -9,7 +9,7 @@ Princip storjového učení je,že síť dostane data se správnými výsledky a
 aby při načtení těchto dat odpověděla příště správně.
 
 \subsection{Zpětné počítání chyby}
-Zpětné počítání chyby, neboli backpropagation, je algoritmus pro hluboké učení neuronových sítí.
+Zpětné počítání chyby\cite{backpropagation}, neboli backpropagation, je algoritmus pro hluboké učení neuronových sítí.
 Tento algoritmus funguje tak, že se šíří chyba výstupu zpátky do neuronové sítě a podle chyby upravuje postupně váhy a biasy.
 
 Tento algoritmus se skládá ze 4 kroků. Nejprve se musí vyhodnotit chyba. To znamená, že se konkrétní dat nechají vyhodnotit sítí a spočítá se chyba.
@@ -39,5 +39,6 @@ Hodnota aktivovaného neuronu ze zapíše jako \(a_j^l = \sigma(z_j^l)\).
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\textwidth]{images/bias_a_neuron.png}
-    \caption{Příklad zápisu biasu, aktivace a neaktivace neuronu}\cite{bias_a_neuron}
+    \caption{Příklad zápisu biasu, aktivace a neaktivace neuronu} \cite{bias_a_neuron}
 \end{figure}
+
