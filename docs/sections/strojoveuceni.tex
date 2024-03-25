@@ -23,21 +23,21 @@ V moment, kdy budeme znát tento vztah, tak víme jakým směrem upravit váhu n
 Důležitá část pro pochopení vzorce algoritmu zpětné počítání chyby je notace zápisu neuronové sítě.
 Proto je potřeba nejprve definovat zápis a až dále se budu věnovat samotným vzorcům a vztahům při počítání zpětné počítání chyby.
 Pro po popsání váhy budem zapisovat jako \(w_{jk}^l\), kde \(l\) je číslo vrstvy, \(j\) je označení,
-do kterého neuronu v \(l\)-té vrstvě váha směřuje a číslo \(k\) označuje z kolikátého neuronu z vrstvy \(l-1\) váha vychází.
+do kterého neuronu v \(l\)-té vrstvě váha směřuje a číslo \(k\) označuje z kolikátého neuronu z vrstvy \((l-1)\) váha vychází.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/vaha_v_siti.png}
+    \includegraphics[width=0.4\textwidth]{images/vaha_v_siti.png}
     \caption{Příklad zápisu váhy}\cite{vaha_v_siti}
 \end{figure}
 
 Podobná notace se použije také při popisu biasu, neaktivované a neaktivované hodnoty neuronu.
 Bias neuronu se zapíše jako \(b_{j}^l\), kde \(l\) je vrstva neuronu a \(j\) je \(j\)-tý neuron v \(l\)-té vrstvě.
-Hodnota neuronu před aktivací je označí písmenem \(z_{j}^{l} = \left( \sum_k w^{l}_{jk} a^{l-1}_k + b^l_j \right)\).
-Hodnota aktivovaného neuronu ze zapíše \(a_j^l = \sigma(z_j^l)\).
+Hodnota neuronu před aktivací je označí písmenem \(z_{j}^{l} = \left( \sum (w^{l}_{jk} a^{l-1}_k) + b^l_j \right)\).
+Hodnota aktivovaného neuronu ze zapíše jako \(a_j^l = \sigma(z_j^l)\).
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/bias_a_neuron.png}
+    \includegraphics[width=0.4\textwidth]{images/bias_a_neuron.png}
     \caption{Příklad zápisu biasu, aktivace a neaktivace neuronu}\cite{bias_a_neuron}
 \end{figure}
