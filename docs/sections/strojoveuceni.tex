@@ -53,7 +53,7 @@ Tento vztah nám vpodstatě říká, jak se změní celková chyba při změně 
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.4\textwidth]{images/delta.png}
+    \includegraphics[width=0.35\textwidth]{images/delta.png}
     \caption{Změny} \cite{delta}
 \end{figure}
 
@@ -65,5 +65,18 @@ Jakmile máme tento vztah, je potřeba spočítat derivaci čitatele vůči jmen
 
 Protože \(C_0 = (a^{(L)} - y)^2\), tak potom bude derivace \(\frac{\delta C_0}{\delta a^{(L)})}= 2(a^{(L)} - y)\).
 Parcialní derivace \(\frac{\delta a^{(L)}}{\delta z^{(L)}} = activation'(z^{(L)}) \).
-Nakonec parcialní derivace \(\frac{\delta z^{(L)}}{\delta w^{(L)}} = a^{(L-1)})\).
-Z toho vyplývá, že \(\frac{\delta C_0}{\delta w^{(L)}} = a^{(L-1)} activation'(z^{(L)}) (a^{(L)} - y)^2\)
+Nakonec parcialní derivace \(\frac{\delta z^{(L)}}{\delta w^{(L)}} = a^{(L-1)}\).
+Z toho vyplývá, že \(\frac{\delta C_0}{\delta w^{(L)}} = a^{(L-1)} activation'(z^{(L)}) 2(a^{(L)} - y)\)
+
+
+Jakmile máme odvozený vztah pro \(\frac{\delta C_0}{\delta w^{(L)}}\), můžeme odvodit pravidlo rozšířit, aby fungovalo obevně pro všechny neuronové sítě.
+Tím pádem nás zajímá \(\frac{\delta C_0}{\delta w_{jk}^{(L)}}\). Prvním rozdílem je, že \(C_0 = \\sum_{j=1}^{n_L}(a_j^{(L)} - y_j)^2 \).
+Druhým rozdílem je, že \(\frac{\delta C_0}{\delta a_j^{(L-1)}}\) se bude počítat trochu složitěji. Protože neuron \(n_j^(L-1)]\) ovlivňuje chybu skrz několik cest.
+Tím pádem \(\frac{\delta C_0}{\delta a_j^{(L-1)}} = \\sum_{j=1}^{n_L} \frac{\delta z_j^{(L)}}{\delta a_k^{(L-1)}} \frac{\delta a_j^{(L)}}{\delta z_j^{(L)}} \frac{\delta C_0}{\delta a_j^(L)}\)
+Z toho vyplývá, že \(\frac{\delta C_0}{\delta a_j^{(L-2)}} = \\sum_{j=1}^{n_L} \frac{\delta C_0}{\delta a_j^{(L-1)}} \).
+V tuto chvíli už dokážeme spočítat chybu vůči všem vahám v síti, a tudíž upravovat jejich hodnoty k lepším.
+
+Už zbývá spočítat chybu vůči vahám, aby byl algoritmus zpětného počítání chyby hotový.
+Naštěstí se počítání moc neliší od počítání chyby vůči vahám.
+Vzorec pro spočítání zůstane skoro stejný, kde \(\frac{\delta C_0}{b_j^{(L)}} = \frac{\delta z^{(L)})}{\delta b^{(L)}}\frac{\delta a^{(L)}}{\delta z^{(L)}}\frac{\delta C_0}{\delta a^{(L)}} \).
+Derivace \(\frac{\delta z^{(L)}}{\delta b^{(L)}} = 1 \) a zbytek derivací zůstane stejný. Tedy \(\frac{\delta C_0}{b_j^{(L)}} =  activation'(z^{(L)}) 2(a^{(L)} - y)\).
