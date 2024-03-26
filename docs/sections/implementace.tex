@@ -18,7 +18,7 @@ Další pole \(bias\) má také dva rozměry a jeho velikost je identická jako 
 Hodnoty v jednotlivých polích reprezentují hodnotu biasu konkrétního neuronu. Hodnoty jsou také typu long double.
 
 Poslední pole reprezentující samotnou neuronovou síť je trojrozměrné pole \(weight\). Velikost pole je rovno počtu vrstev mínus jedna.
-První (nultý) prvek tj. \(weight[0]\) reprezentuje dvojrozměrné pole, které reprezentuje váhy spojující vstupní neuroný s neurony druhé vrstvy.
+První (nultý) prvek tj. \(weight[0]\) reprezentuje dvojrozměrné pole, které reprezentuje váhy spojující vstupní neurony s neurony druhé vrstvy.
 Pole \(weight[0][0]\) je pole hodnot jednotlivých vah, které míří do prvních (nultého) neuronu druhé vrstvy. Váhy jsou také typu long double.
 
 Při vytváření nové neuronové sítě se v konstruktoru vytvoří zmiňovaná pole o velikostech, které odpovídají zadaným parametrům.
@@ -61,7 +61,7 @@ Možné použití jsou:
 
     \item Vytvoří novou neuronovou síť podle požadavků a síť natrénuje stejným způsobem jako v předešlém bodě.
     \begin{lstlisting}[language=bash, backgroundcolor=\color{backcolor}]
- $ ./digitor -t -n <neurony> <iterace> <rychlost_uceni> <aktivace>
-    <počet_dávek> <počet_dat>
+ $ ./digitor -t -n <neurony> <iterace> <rychlost_uceni>
+    <aktivace> <pocet_davek> <pocet_dat>
     \end{lstlisting}
 \end{itemize}

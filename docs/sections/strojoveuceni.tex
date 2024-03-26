@@ -19,9 +19,12 @@ Na základě této derivace se váhy a biasy aktualizují. Tato aktualizace pom�
 \subsection{Počítání chyby a aktualizace vah a biasů}
 Celková chyba sítě se označuje velkým písmenem \(C\). Při zpětné úpravě vah a biasů nás zajímá jaká je derivace chyby vůči každé váze \(\frac{\delta C}{\delta w}\) a biasu \(\frac{\delta C}{\delta b}\).
 V moment, kdy budeme znát tento vztah, tak víme jakým směrem upravit váhu nebo bias, abychom snížili celkovou chybu sítě.
+Celkovou chybu sítě pro jeden konkrétní trénovací příklad se spočítá jako součet očekávaný výsledek všech neuronů ve výstupní vrstvě mínus jejich realný výsledek \(C_0 = \sum (target_i - output_i)^2 \).
+Tím pádem celková chyba pro všechny trénovací data je \(C = \frac{1}{n}\sum (target_i - output_i)^2 \).
 
 Důležitá část pro pochopení vzorce algoritmu zpětné počítání chyby je notace zápisu neuronové sítě.
 Proto je potřeba nejprve definovat zápis a až dále se budu věnovat samotným vzorcům a vztahům při počítání zpětné počítání chyby.
+
 Pro po popsání váhy budem zapisovat jako \(w_{jk}^l\), kde \(l\) je číslo vrstvy, \(j\) je označení,
 do kterého neuronu v \(l\)-té vrstvě váha směřuje a číslo \(k\) označuje z kolikátého neuronu z vrstvy \((l-1)\) váha vychází.
 
@@ -31,10 +34,12 @@ do kterého neuronu v \(l\)-té vrstvě váha směřuje a číslo \(k\) označuj
     \caption{Příklad zápisu váhy}\cite{vaha_v_siti}
 \end{figure}
 
-Podobná notace se použije také při popisu biasu, neaktivované a neaktivované hodnoty neuronu.
+Podobná notace se použije také při popisu biasu, neaktivované a aktivované hodnoty neuronu.
 Bias neuronu se zapíše jako \(b_{j}^l\), kde \(l\) je vrstva neuronu a \(j\) je \(j\)-tý neuron v \(l\)-té vrstvě.
 Hodnota neuronu před aktivací je označí písmenem \(z_{j}^{l} = \left( \sum (w^{l}_{jk} a^{l-1}_k) + b^l_j \right)\).
-Hodnota aktivovaného neuronu ze zapíše jako \(a_j^l = \sigma(z_j^l)\).
+Hodnota \(z_j^l\) je tedy součet součinů neunonů z předešlé vrsty a příslušných vah.
+Hodnota aktivovaného neuronu ze zapíše jako \(a_j^l = f(z_j^l)\), kde funkce \(f(x)\) je nějaké aktivační funkce,
+jako například funkce sigmoid \(\sigma(x)\).
 
 \begin{figure}[h]
     \centering
@@ -42,3 +47,23 @@ Hodnota aktivovaného neuronu ze zapíše jako \(a_j^l = \sigma(z_j^l)\).
     \caption{Příklad zápisu biasu, aktivace a neaktivace neuronu} \cite{bias_a_neuron}
 \end{figure}
 
+Pokud máme upřesněnu notaci, můžeme se posunout k samotnému algoritmu počítání chyby.
+Základem, jak už bylo zmíněno, je poměr \(\frac{\delta C}{\delta w}\). Tento vztah je pro výpočet klíčový.
+Tento vztah nám vpodstatě říká, jak se změní celková chyba při změně \(w\).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/delta.png}
+    \caption{Změny} \cite{delta}
+\end{figure}
+
+Nejprve si ukážeme pro jednoduchost jak funguje učení neuronové sítě pouze s jedním neuronem na vrstvu. Jak je z obrázku vidět, že když změníme hodnotu \(w^{(L)}\), tak to ovlivní hodnotu \(z^{(L)})\) a to zas nějak ovlivní \(a^{(L)}\) a to pak přímo ovlivní \(C_0\).
+Existuje tedy pravidlo, řetězové pravidlo\cite{chain_rule}, které říká, že \(\frac{\delta C_0}{\delta w^{(L)}} = \frac{\delta z^{(L)})}{\delta w^{(L)}}\frac{\delta a^{(L)}}{\delta z^{(L)}}\frac{\delta C_0}{\delta a^{(L)}}\).
+Toto pravidlo tedy říká, že pokud nějaký prvek nepřímo ovlivňuje poslední prvek, tak se ta změna rovná součinu změně přímo po sobě jdoucích členů.
+
+Jakmile máme tento vztah, je potřeba spočítat derivaci čitatele vůči jmenovateli.
+
+Protože \(C_0 = (a^{(L)} - y)^2\), tak potom bude derivace \(\frac{\delta C_0}{\delta a^{(L)})}= 2(a^{(L)} - y)\).
+Parcialní derivace \(\frac{\delta a^{(L)}}{\delta z^{(L)}} = activation'(z^{(L)}) \).
+Nakonec parcialní derivace \(\frac{\delta z^{(L)}}{\delta w^{(L)}} = a^{(L-1)})\).
+Z toho vyplývá, že \(\frac{\delta C_0}{\delta w^{(L)}} = a^{(L-1)} activation'(z^{(L)}) (a^{(L)} - y)^2\)
