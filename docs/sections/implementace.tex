@@ -48,13 +48,12 @@ Aktualizované hodnoty vah a bíasů se ukládají do externího pola a skutečn
 Takto se postupně trénuje síť pomocí všech setů dat. Následně se celý tento proces opakuje podle počtu iterací.
 Metoda v průběhu počítá průměrnou chybu pro vstupní data, kterou vypisuje na standardní výstup společně s progresem trénování (procento vykonaných iterací).
 
-Metoda \(backpropagate\) funguje na principu popsaném v kapitole stojové učení \ref{strojove_uceni}. Funkce je rozdělena do dvou částí.
+Metoda \(backpropagate\) funguje na principu popsaném v kapitole strojové učení \ref{strojove_uceni}. Funkce je rozdělena do dvou částí.
 První část spočíta chybu pro nejposlednější vrstvu, která se počítá jednodušeji, protože neurony ovlivňují chybu pouze jednou cestou.
 Druhá část naváže na první a počítá zpětně chybu pro zbytek vrstev. Pro výpočty jsou použity vzorce z kapitoly o strojovém učení \ref{strojove_uceni}.
 
 \subsection{Spouštění programu}
-Při spouštění si pomocí přepínačů lze nastavid, zda chceme například vytvářet úplně novou neuronovou síť, nebo chceme načíst již exístující síť.
-Dále je možné specifikovat jestli chceme síť trénovat nebo ji chceme použít k zpracování dat.
+Při spouštění si pomocí přepínačů lze nastavit, zda chceme například vytvářet úplně novou neuronovou síť, nebo chceme načíst již exístující síť. Dále je možné specifikovat jestli chceme síť trénovat nebo ji chceme použít k zpracování dat.
 
 Možné použití jsou:
 \begin{itemize}
