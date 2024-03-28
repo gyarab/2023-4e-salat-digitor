@@ -14,6 +14,8 @@ Naopak poslední prvek pole \(neuron\) reprezentuje poslední (výstupní) vrstv
 Počet skrytých vrstev v neuronové síti se tedy rovná \((neuron.size() - 2)\).
 Každé toto pole uložené v \(neuron\) obsahuje \(n\) hodnot, které reprezentují hodnoty konkrétních neuronů. Hodnoty jsou typu long double.
 
+Dále je potřeba pole \(rawNeuron\), které je uplně stejné jako pole \(neuron\), ale jsou do něj ukládány neaktivované hodnoty neuronů.
+
 Další pole \(bias\) má také dva rozměry a jeho velikost je identická jako velikost pole \(neuron\).
 Hodnoty v jednotlivých polích reprezentují hodnotu biasu konkrétního neuronu. Hodnoty jsou také typu long double.
 
@@ -31,6 +33,24 @@ Pokud program pouze načítá neuronovou síť z již existujícího souboru, ko
 Dále konstruktor deserializuje data ze souboru a uloží si je do proměnných.
 
 \subsection{Trénování neuronové sítě}
+Jak už bylo zmíněno v kapitole o strojovém učení, proces učení neuronové sítě se skládá ze čtyř částí. Tedy průchod dat sítí a vyhodnocení chyby,
+zpětné počítání chyby, aktualizace vah a biasů a nakonec se vše zopakuje. Průchod dat sítí neboli přímý průchod je vyřešen jako tři vnořené \(for\) cykly.
+Hodnota každého neuronu se vypočítá podle vzorce na výpočet hodnoty neuronu, a tudíž \(z_{j}^{l} = \left( \sum (w^{l}_{jk} \cdot a^{l-1}_k) + b^l_j \right)\).
+Z důvodu, že při zpětném počítání chybe je potřeba aktivovaný i neaktivovaný neuron, tak se do paměti uloží obě hodnoty (do pole \(neuron\) a \(rawNeuron\)).
+Pro samotné učení je v programu metoda \(train\), která všechny tyto kroky provede.
+
+Při volání metody \(train\), funkce očekává dvojrozměrné pole typy \(TrainData\), které obsahuje vstupní hodnoty a správný výsledek průchodu,
+počet trénovacích cyklů (iterací) a jako poslední parametru očekává tzv. rychlost učení (learning rate).
+Learning rate určuje míru změny při aktualizaci vah a biasů. Hodnota rychlosti učení se běžně pohubuje v rozmezí od 0.1 do 0.0001.
+Pole \(TrainData\) je dvojrozměrné z důvodu, že data jsou rozdělena do tzv. seté, které zajišťují rychlejší a univerzálnější učení.
+Tím pádem metoda \(train\) funguje tak, že zavolá metodu \(backpropagate\) na všechny členy setu.
+Aktualizované hodnoty vah a bíasů se ukládají do externího pola a skutečné váhy a biasy neuronové sítě se aktualizují až po dokončení.
+Takto se postupně trénuje síť pomocí všech setů dat. Následně se celý tento proces opakuje podle počtu iterací.
+Metoda v průběhu počítá průměrnou chybu pro vstupní data, kterou vypisuje na standardní výstup společně s progresem trénování (procento vykonaných iterací).
+
+Metoda \(backpropagate\) funguje na principu popsaném v kapitole stojové učení \ref{strojove_uceni}. Funkce je rozdělena do dvou částí.
+První část spočíta chybu pro nejposlednější vrstvu, která se počítá jednodušeji, protože neurony ovlivňují chybu pouze jednou cestou.
+Druhá část naváže na první a počítá zpětně chybu pro zbytek vrstev. Pro výpočty jsou použity vzorce z kapitoly o strojovém učení \ref{strojove_uceni}.
 
 \subsection{Spouštění programu}
 Při spouštění si pomocí přepínačů lze nastavid, zda chceme například vytvářet úplně novou neuronovou síť, nebo chceme načíst již exístující síť.
