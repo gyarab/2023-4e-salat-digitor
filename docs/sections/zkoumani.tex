@@ -1,6 +1,6 @@
 \section{Zkoumání architektur}
-Při vytváření sítě na rozpoznávání rukou napsaných číslic jsme narazil na problém, že nevím jak velkou sít na to mám použít.
-Při hledání na internetu jsem zjistil, že vlastě není žádná perfektní síť, a že ideální velikost sítě vždy závisí na problému, který má řešit.
+Při vytváření sítě na rozpoznávání rukou napsaných číslic jsem narazil na problém, že nevím, jak velkou sít mám použít.
+Při hledání na internetu jsem zjistil, že vlastě neexistuje žádná perfektní síť, a že ideální velikost sítě vždy závisí na problému, který má řešit.
 Z toho důvodu jsem se rozhodl, že vytvořím malý výzkum na to, které síť má nejlepší výsledky.
 Vytvořil jsem proto osm různých neuronových sítí, kterým jsem dal úplně stejný učící set a stejný počet iterací na natrénování.
 Sítě měly vždy stejný počet vstupních a výstupních neuronů pouze se lišily v počtu skrytých vrstev a v počtu neuronů v těchto vrstvách.
@@ -15,14 +15,14 @@ Použité architektury byly následovné:
     \item 3 vrstvy po 56 neuronech
     \item 3 vrstvy po 64 neuronech
 \end{itemize}
-Tyto konkrétní architektury byly zvoleny z důvodu, že se mi ještě před ukutečí tohoto zkoumání podařilo vytvořit model,
+Tyto konkrétní architektury jsem zvolil z důvodu, že se mi ještě před uskutečněním tohoto zkoumání podařilo vytvořit model,
 který měl 3 skryté vrstvy po 64 neuronech, a který dokázal rozpoznat obrázky s vysokou přesnotsí.
-Proto mě napadlo zkusit kolik neuronů je potřeba, aby neuronová síť měla uspokujivé výsledky.
-Zvolil jsme tedy neuronové sítě, které mají postupně nižsí počet neuronů a zkoumal jsem jaký to má vliv na výsledky.
+Proto mě napadlo zkusit, kolik neuronů je potřeba, aby neuronová síť měla uspokujivé výsledky.
+Zvolil jsme tedy neuronové sítě, které mají postupně nižsí počet neuronů a zkoumal jsem, jaký to má vliv na výsledky.
 
-Vytvořil jsem tedy 8 těchto sítí a spustiol jsme trénování. Všechný sítě dostaly identická data a identický počet iterací.
+Vytvořil jsem tedy 8 těchto sítí a spustil jsme trénování. Všechný sítě dostaly identická data a identický počet iterací.
 Zárověň jsem měřil čas, za jak dlouho se síť s těmito parametry natrénuje. Sítě byly tedy na trénovány pomocí 10000 obrázků (1000 z od každé číslice).
-Po ukončení trénování jsem sítě otestoval pomocí 27730 vyčleněných obrázků z databáze mnist, které sítě nikdy neviděli.
+Po ukončení trénování jsem sítě otestoval pomocí 27730 vyčleněných obrázků z databáze mnist, které sítě nikdy neviděly.
 
 \begin{center}
     \begin{tabular}{||c c c||}
@@ -48,7 +48,7 @@ Po ukončení trénování jsem sítě otestoval pomocí 27730 vyčleněných ob
     \end{tabular}
 \end{center}
 
-Z výsledků je zřejmé, že sítě s vyšším počtem neuronů mají v tomto případě lepší výsledky, ale trénování takových sítí trvá delší čas.
+Z výsledků je zřejmé, že sítě s vyšším počtem neuronů mají v tomto případě lepší výsledky, ale trénování takových sítí trvá déle.
 V tomto připadě jsem došel k závěru, že rozdíl mezi trénováním menších a větších sítí není tak markantní,
 a tudíž se v tomto konkrétním připadě vyplatí použít sítě s většim počtem vrstev a neuronů.
 Největší síť se dokázala vytrénovat v pozdějším trénování vytrénovat natolik, že dokázala poznat více než 98\% obrázků, které nikdy neviděla.

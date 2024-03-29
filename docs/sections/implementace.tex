@@ -1,7 +1,7 @@
 \section{Implementace v programu}
 Program slouží k vytváření a trénování neuronových sítí podle vstupních parametrů.
 Samotný program se dá spustit s přepínači, které určují chování programu.
-Program je schopen na požadavek buď, vytvořit novou síť podle vstupních parametrů, nebo načíst existující síť ze souboru JSON.
+Program je schopen na požadavek buď vytvořit novou síť podle vstupních parametrů, nebo načíst existující síť ze souboru JSON.
 S takto vytvořenou neuronovou sítí je program dále schopen pracovat dvěma způsoby.
 Neuronovou síť může trénovat nebo jí jen načte a čeká na vstupní data, která neuronová síť zpracuje a vrátí výsledek.
 
@@ -49,7 +49,7 @@ Takto se postupně trénuje síť pomocí všech setů dat. Následně se celý 
 Metoda v průběhu počítá průměrnou chybu pro vstupní data, kterou vypisuje na standardní výstup společně s progresem trénování (procento vykonaných iterací).
 
 Metoda \(backpropagate\) funguje na principu popsaném v kapitole \ref{strojove_uceni} strojové učení. Funkce je rozdělena do dvou částí.
-První část spočíta chybu pro nejposlednější vrstvu, která se počítá jednodušeji, protože neurony ovlivňují chybu pouze jednou cestou.
+První část spočíta chybu pro poslední vrstvu, která se počítá jednodušeji, protože neurony ovlivňují chybu pouze jednou cestou.
 Druhá část naváže na první a počítá zpětně chybu pro zbytek vrstev. Pro výpočty jsou použity vzorce z kapitoly \ref{strojove_uceni} o strojovém učení.
 
 \subsection{Spouštění programu}
@@ -64,7 +64,7 @@ Možné použití jsou:
 
     \item Vytvoří neuronovou síť podle zadaných parametrů.
     Formát pro zadání neuronů je vždy počet neuronů pro každou vrstvu, který je oddělen čárkou.
-    Př. "10,2,2,10", tato síť by měla čtyři vrstvy z čehož vstupní i výstupní by měla 10 neuronů a obě skryté by měly 2 neurony.
+    Př. "10,2,2,10", tato síť by měla čtyři vrstvy, z čehož vstupní i výstupní by měla 10 neuronů a obě skryté by měly 2 neurony.
     \begin{lstlisting}[language=bash, backgroundcolor=\color{backcolor}]
  $ ./digitor -n <neurony> <aktivace>
     \end{lstlisting}
