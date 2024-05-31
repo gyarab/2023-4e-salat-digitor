@@ -76,7 +76,7 @@ Derivace \(\frac{\delta z^{(L)}}{\delta b^{(L)}} = 1 \) a zbytek derivací zůst
 Jakmile máme odvozený vztah pro \(\frac{\delta C_0}{\delta w^{(L)}}\), můžeme odvodit pravidlo rozšířit, aby fungovalo obevně pro všechny neuronové sítě.
 Tím pádem nás zajímá \(\frac{\delta C_0}{\delta w_{jk}^{(L)}}\). Prvním rozdílem je, že \(C_0 = \sum_{j=1}^{n_L}(a_j^{(L)} - y_j)^2 \).
 Druhým rozdílem je, že \(\frac{\delta C_0}{\delta a_j^{(L-1)}}\) se bude počítat trochu složitěji. Protože neuron \(n_j^{(L-1)}\) ovlivňuje chybu skrz několik cest.
-Tím pádem \(\frac{\delta C_0}{\delta a_j^{(L-1)}} = \sum_{j=1}^{n_L} \frac{\delta z_j^{(L)}}{\delta a_k^{(L-1)}} \cdot \frac{\delta a_j^{(L)}}{\delta z_j^{(L)}} \cdot \frac{\delta C_0}{\delta a_j^{(L)}\).
+Tím pádem \(\frac{\delta C_0}{\delta a_j^{(L-1)}} = \sum_{j=1}^{n_L} \frac{\delta z_j^{(L)}}{\delta a_k^{(L-1)}} \cdot \frac{\delta a_j^{(L)}}{\delta z_j^{(L)}} \cdot \frac{\delta C_0}{\delta a_j^{(L)}}\).
 Z toho vyplývá, že \(\frac{\delta C_0}{\delta a_j^{(L-2)}} = \sum_{j=1}^{n_L} \frac{\delta C_0}{\delta a_j^{(L-1)}} \) a \(\frac{\delta C_0}{\delta a_j^{(L)}} = \sum_{j=1}^{n_L} 2(a_j^{(L) - y_j})\).
 
 To samé platí i pro výpočet chyby vůči biasu. Tím pádem vzorec zůstane stejný, jen s tou změnou, že \(\frac{\delta C_0}{\delta a_j^{(L-2)}} = \sum_{j=1}^{n_L} \frac{\delta C_0}{\delta a_j^{(L-1)}} \).
