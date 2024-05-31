@@ -57,13 +57,13 @@ Tento vztah nám v podstatě říká, jak se změní celková chyba při změně
     \caption{Změny} \cite{delta}
 \end{figure}
 
-Nejprve si ukážeme, pro jednoduchost, jak funguje učení neuronové sítě pouze s jedním neuronem na vrstvu. Jak je z obrázku vidět, když změníme hodnotu \(w^{(L)}\), tak to ovlivní hodnotu \(z^{(L)})\) a to zas nějak ovlivní \(a^{(L)}\) a to pak přímo ovlivní \(C_0\).
+Nejprve si ukážeme, pro jednoduchost, jak funguje učení neuronové sítě pouze s jedním neuronem na vrstvu. Jak je z obrázku vidět, když změníme hodnotu \(w^{(L)}\), tak to ovlivní hodnotu \(z^{(L)}\) a to zas nějak ovlivní \(a^{(L)}\) a to pak přímo ovlivní \(C_0\).
 Existuje tedy pravidlo, řetězové pravidlo\cite{chain_rule}, které říká, že \(\frac{\delta C_0}{\delta w^{(L)}} = \frac{\delta z^{(L)})}{\delta w^{(L)}} \cdot \frac{\delta a^{(L)}}{\delta z^{(L)}} \cdot \frac{\delta C_0}{\delta a^{(L)}}\).
 Toto pravidlo tedy říká, že pokud nějaký prvek nepřímo ovlivňuje poslední prvek, tak se ta změna rovná součinu změně přímo po sobě jdoucích členů.
 
 Jakmile máme tento vztah, je potřeba spočítat derivaci čitatele vůči jmenovateli.
 
-Protože \(C_0 = (a^{(L)} - y)^2\), tak potom bude derivace \(\frac{\delta C_0}{\delta a^{(L)})}= 2(a^{(L)} - y)\).
+Protože \(C_0 = (a^{(L)} - y)^2\), tak potom bude derivace \(\frac{\delta C_0}{\delta a^{(L)}}= 2(a^{(L)} - y)\).
 Parcialní derivace \(\frac{\delta a^{(L)}}{\delta z^{(L)}} = activation'(z^{(L)}) \).
 Nakonec parcialní derivace \(\frac{\delta z^{(L)}}{\delta w^{(L)}} = a^{(L-1)}\).
 Z toho vyplývá, že \(\frac{\delta C_0}{\delta w^{(L)}} = a^{(L-1)} \cdot activation'(z^{(L)}) \cdot 2(a^{(L)} - y)\)
@@ -76,7 +76,7 @@ Derivace \(\frac{\delta z^{(L)}}{\delta b^{(L)}} = 1 \) a zbytek derivací zůst
 Jakmile máme odvozený vztah pro \(\frac{\delta C_0}{\delta w^{(L)}}\), můžeme odvodit pravidlo rozšířit, aby fungovalo obevně pro všechny neuronové sítě.
 Tím pádem nás zajímá \(\frac{\delta C_0}{\delta w_{jk}^{(L)}}\). Prvním rozdílem je, že \(C_0 = \sum_{j=1}^{n_L}(a_j^{(L)} - y_j)^2 \).
 Druhým rozdílem je, že \(\frac{\delta C_0}{\delta a_j^{(L-1)}}\) se bude počítat trochu složitěji. Protože neuron \(n_j^{(L-1)}\) ovlivňuje chybu skrz několik cest.
-Tím pádem \(\frac{\delta C_0}{\delta a_j^{(L-1)}} = \sum_{j=1}^{n_L} \frac{\delta z_j^{(L)}}{\delta a_k^{(L-1)}} \cdot \frac{\delta a_j^{(L)}}{\delta z_j^{(L)}} \cdot \frac{\delta C_0}{\delta a_j^(L)}\).
+Tím pádem \(\frac{\delta C_0}{\delta a_j^{(L-1)}} = \sum_{j=1}^{n_L} \frac{\delta z_j^{(L)}}{\delta a_k^{(L-1)}} \cdot \frac{\delta a_j^{(L)}}{\delta z_j^{(L)}} \cdot \frac{\delta C_0}{\delta a_j^{(L)}\).
 Z toho vyplývá, že \(\frac{\delta C_0}{\delta a_j^{(L-2)}} = \sum_{j=1}^{n_L} \frac{\delta C_0}{\delta a_j^{(L-1)}} \) a \(\frac{\delta C_0}{\delta a_j^{(L)}} = \sum_{j=1}^{n_L} 2(a_j^{(L) - y_j})\).
 
 To samé platí i pro výpočet chyby vůči biasu. Tím pádem vzorec zůstane stejný, jen s tou změnou, že \(\frac{\delta C_0}{\delta a_j^{(L-2)}} = \sum_{j=1}^{n_L} \frac{\delta C_0}{\delta a_j^{(L-1)}} \).
