@@ -1,5 +1,6 @@
 > [!WARNING]
-> Tento projekt se přesenul na novou <a href="https://github.com/ondrej-salat/digitor">adresu</a>.
+> **Tento repositář byl archivován.**
+> Ve vývoji tohoto programu budu pokračovat v mém osobním repositáři <a href="https://github.com/ondrej-salat/digitor">https://github.com/ondrej-salat/digitor</a>
 
 # Digitor [<i><a href="https://gyarab.github.io/2023-4e-salat-digitor/main.pdf">Online PDF dokumentace</a></i>]
 
